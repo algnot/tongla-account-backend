@@ -2,8 +2,8 @@ package repository_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	"tongla-account/ditest"
 	"testing"
+	"tongla-account/ditest"
 )
 
 func TestStorePassphrase(t *testing.T) {

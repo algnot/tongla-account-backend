@@ -1,11 +1,11 @@
 package ditest
 
 import (
+	"testing"
 	config2 "tongla-account/di/config"
 	databasetest "tongla-account/ditest/database"
 	"tongla-account/repository"
 	service "tongla-account/service/api_keys"
-	"testing"
 )
 
 func InitTestApplication(t *testing.T) *ApplicationTestSuite {

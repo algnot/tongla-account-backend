@@ -5,8 +5,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	recover2 "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/kelseyhightower/envconfig"
+	"log"
+	"tongla-account/di/
 	"tongla-account/di/config"
-	"tongla-account/service"
 	"log"
 )
 

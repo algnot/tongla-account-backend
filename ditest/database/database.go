@@ -4,8 +4,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"tongla-account/entity/migrater"
 	"os"
+	
 )
 
 func InitTestDatabase() (*gorm.DB, func()) {

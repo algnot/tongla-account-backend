@@ -7,10 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
-	"tongla-account/di/config"
-	"tongla-account/entity"
 	"os"
 	"strconv"
+	"tongla-account/di/config"
+	"tongla-account/entity"
 )
 
 type EncryptorRepository interface {
