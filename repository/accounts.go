@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"github.com/pquerna/otp/totp"
 	"gorm.io/gorm"
 	"time"
 	"tongla-account/di/config"
@@ -15,9 +16,10 @@ type AccountRepository interface {
 	FindByUsername(username string) (*entity.Account, error)
 	FindByEmail(email string) (*entity.Account, error)
 	FindById(id string) (*entity.Account, error)
+	GenerateSecret(userEnt *entity.Account) (string, error)
+	SendVerifyEmail(account *entity.Account) error
 
 	isDuplicateAccount(account *entity.Account) (bool, error)
-	sendVerifyEmail(account *entity.Account) error
 }
 
 type accountRepository struct {
@@ -26,6 +28,25 @@ type accountRepository struct {
 	encryptorRepository    EncryptorRepository
 	notificationRepository NotificationRepository
 	tokenRepository        TokenRepository
+}
+
+func (a accountRepository) GenerateSecret(userEnt *entity.Account) (string, error) {
+	key, err := totp.Generate(totp.GenerateOpts{
+		Issuer:      "Tongla Account",
+		AccountName: a.encryptorRepository.Decrypt(userEnt.Email),
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	userEnt.Secret = a.encryptorRepository.Encrypt(key.Secret())
+	_, err = a.UpdateAccount(userEnt)
+	if err != nil {
+		return "", err
+	}
+
+	return key.URL(), nil
 }
 
 func (a accountRepository) UpdateAccount(account *entity.Account) (*entity.Account, error) {
@@ -45,7 +66,7 @@ func (a accountRepository) FindById(id string) (*entity.Account, error) {
 	return &ent, nil
 }
 
-func (a accountRepository) sendVerifyEmail(account *entity.Account) error {
+func (a accountRepository) SendVerifyEmail(account *entity.Account) error {
 	token, err := a.encryptorRepository.GeneratePassphrase(50)
 	if err != nil {
 		return err
@@ -154,7 +175,7 @@ func (a accountRepository) CreateAccount(account *entity.Account) (*entity.Accou
 		return nil, result.Error
 	}
 
-	err = a.sendVerifyEmail(account)
+	err = a.SendVerifyEmail(account)
 	if err != nil {
 		return account, err
 	}

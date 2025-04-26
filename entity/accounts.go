@@ -16,6 +16,15 @@ type VerifyEmailRequest struct {
 	Token string `json:"token" validate:"required"`
 }
 
+type Verify2FARequest struct {
+	Token string `json:"token" validate:"required"`
+	Code  string `json:"code" validate:"required"`
+}
+
+type LoginRequest struct {
+	Email string `json:"email" validate:"required"`
+}
+
 type Account struct {
 	ID         string         `json:"id" gorm:"type:varchar(255);primarykey"`
 	Username   EncryptedField `json:"username" gorm:"type:varbinary(512)" validate:"required"`
@@ -23,6 +32,7 @@ type Account struct {
 	Firstname  EncryptedField `json:"firstname" gorm:"type:varbinary(512)" validate:"required"`
 	Lastname   EncryptedField `json:"lastname" gorm:"type:varbinary(512)" validate:"required"`
 	IsVerified bool           `json:"isVerified" gorm:"type:boolean;default:false"`
+	Secret     EncryptedField `json:"secret" gorm:"type:varbinary(512)" validate:"required"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
 	DeletedAt  gorm.DeletedAt `json:"deleted_at" gorm:"index"`

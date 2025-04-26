@@ -11,6 +11,8 @@ type AuthService interface {
 	HandleRegisterRouter(c *fiber.Ctx) error
 	HandleVerifyEmailRouter(c *fiber.Ctx) error
 	HandleResendVerifyEmailRouter(c *fiber.Ctx) error
+	HandleResendVerify2FARouter(c *fiber.Ctx) error
+	HandleLoginRouter(c *fiber.Ctx) error
 }
 
 type authService struct {

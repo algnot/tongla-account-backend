@@ -1,17 +1,14 @@
 package service
 
 import (
-	"encoding/base64"
-	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/skip2/go-qrcode"
-	"time"
+	"github.com/pquerna/otp/totp"
 	"tongla-account/entity"
 	"tongla-account/util"
 )
 
-func (a authService) HandleVerifyEmailRouter(c *fiber.Ctx) error {
-	var request entity.VerifyEmailRequest
+func (a authService) HandleResendVerify2FARouter(c *fiber.Ctx) error {
+	var request entity.Verify2FARequest
 
 	err := util.ValidateRequest(c, &request)
 	if err != nil {
@@ -33,12 +30,6 @@ func (a authService) HandleVerifyEmailRouter(c *fiber.Ctx) error {
 		})
 	}
 
-	if token.ExpireAt.Before(time.Now()) {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Link is expired try to login",
-		})
-	}
-
 	user, err := a.accountRepository.FindById(token.AccountID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -52,20 +43,29 @@ func (a authService) HandleVerifyEmailRouter(c *fiber.Ctx) error {
 		})
 	}
 
-	secret, err := a.accountRepository.GenerateSecret(user)
-	if err != nil {
-		return err
+	userSecret := a.encryptorRepository.Decrypt(user.Secret)
+	valid := totp.Validate(request.Code, userSecret)
+	if !valid {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Code is invalid",
+		})
 	}
 
-	qrBytes, err := qrcode.Encode(secret, qrcode.Medium, 256)
+	token.Used = true
+	_, err = a.tokenRepository.UpdateToken(token)
 	if err != nil {
-		panic(err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
-	base64QR := base64.StdEncoding.EncodeToString(qrBytes)
-	dataURL := fmt.Sprintf("data:image/png;base64,%s", base64QR)
+	user.IsVerified = true
+	verifyUser, err := a.accountRepository.UpdateAccount(user)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"qr_code": dataURL,
-	})
+	return c.Status(fiber.StatusOK).JSON(verifyUser.ToResponse(a.encryptorRepository.Decrypt))
 }
