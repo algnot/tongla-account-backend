@@ -1,0 +1,13 @@
+
+services:
+  go-app:
+    build: .
+    restart: always
+    ports:
+      - "9004:8080"
+    env_file:
+      - .env
+
+networks:
+  default:
+    driver: bridge

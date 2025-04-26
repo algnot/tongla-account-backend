@@ -1,0 +1,19 @@
+package entity
+
+import "time"
+
+type TokenType string
+
+const (
+	TokenVerifyEmail TokenType = "verifyEmail"
+)
+
+type Token struct {
+	ID        string    `gorm:"type:varchar(255);primarykey"`
+	AccountID string    `gorm:"type:varchar(255);index"`
+	Type      TokenType `gorm:"type:varchar(255);index"`
+	Token     string    `gorm:"type:varchar(255);uniqueIndex"`
+	Used      bool      `gorm:"default:false"`
+	ExpireAt  time.Time
+	CreatedAt time.Time
+}
