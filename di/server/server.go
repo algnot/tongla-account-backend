@@ -6,9 +6,8 @@ import (
 	recover2 "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/kelseyhightower/envconfig"
 	"log"
-	"tongla-account/di/
 	"tongla-account/di/config"
-	"log"
+	router "tongla-account/service"
 )
 
 func InitApiServer() error {

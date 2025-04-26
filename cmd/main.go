@@ -4,12 +4,11 @@ import (
 	"flag"
 	"github.com/joho/godotenv"
 	"log"
-	"tongla-acco
 	"tongla-account/di"
 	config2 "tongla-account/di/config"
 	"tongla-account/di/database"
 	"tongla-account/entity/migrater"
-	"log"
+	"tongla-account/repository"
 )
 
 func main() {

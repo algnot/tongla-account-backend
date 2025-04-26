@@ -134,12 +134,12 @@ func (r *encryptorRepository) Decrypt(ciphertext []byte) string {
 		panic(err)
 	}
 
-	aes, err := aes.NewCipher(secretKey.Hash)
+	aesCipher, err := aes.NewCipher(secretKey.Hash)
 	if err != nil {
 		panic(err)
 	}
 
-	gcm, err := cipher.NewGCM(aes)
+	gcm, err := cipher.NewGCM(aesCipher)
 	if err != nil {
 		panic(err)
 	}

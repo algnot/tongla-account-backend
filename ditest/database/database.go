@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"os"
-	
+	"tongla-account/entity/migrater"
 )
 
 func InitTestDatabase() (*gorm.DB, func()) {
