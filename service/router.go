@@ -27,4 +27,5 @@ func InitRouter(server *fiber.App) {
 	server.Post("/auth/verify-2FA", authService.HandleResendVerify2FARouter)
 	server.Post("/auth/resend-verify-email", authService.HandleVerifyEmailRouter)
 	server.Post("/auth/login", authService.HandleLoginRouter)
+	server.Post("/auth/login-with-code", authService.HandleLoginWithCodeRouter)
 }

@@ -6,8 +6,15 @@ import (
 	"tongla-account/util"
 )
 
+type RegisterRequest struct {
+	Username  string `json:"username" validate:"required"`
+	Email     string `json:"email" validate:"required,email"`
+	Firstname string `json:"firstname" validate:"required"`
+	Lastname  string `json:"lastname" validate:"required"`
+}
+
 func (a authService) HandleRegisterRouter(c *fiber.Ctx) error {
-	var registerRequest entity.RegisterRequest
+	var registerRequest RegisterRequest
 
 	err := util.ValidateRequest(c, &registerRequest)
 	if err != nil {

@@ -10,8 +10,12 @@ import (
 	"tongla-account/util"
 )
 
+type VerifyEmailRequest struct {
+	Token string `json:"token" validate:"required"`
+}
+
 func (a authService) HandleVerifyEmailRouter(c *fiber.Ctx) error {
-	var request entity.VerifyEmailRequest
+	var request VerifyEmailRequest
 
 	err := util.ValidateRequest(c, &request)
 	if err != nil {

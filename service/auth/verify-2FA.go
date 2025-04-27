@@ -7,8 +7,13 @@ import (
 	"tongla-account/util"
 )
 
+type Verify2FARequest struct {
+	Token string `json:"token" validate:"required"`
+	Code  string `json:"code" validate:"required"`
+}
+
 func (a authService) HandleResendVerify2FARouter(c *fiber.Ctx) error {
-	var request entity.Verify2FARequest
+	var request Verify2FARequest
 
 	err := util.ValidateRequest(c, &request)
 	if err != nil {

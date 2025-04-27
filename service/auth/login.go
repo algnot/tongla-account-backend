@@ -2,12 +2,15 @@ package service
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"tongla-account/entity"
 	"tongla-account/util"
 )
 
+type LoginRequest struct {
+	Email string `json:"email" validate:"required"`
+}
+
 func (a authService) HandleLoginRouter(c *fiber.Ctx) error {
-	var registerRequest entity.LoginRequest
+	var registerRequest LoginRequest
 
 	err := util.ValidateRequest(c, &registerRequest)
 	if err != nil {

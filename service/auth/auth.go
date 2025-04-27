@@ -13,6 +13,7 @@ type AuthService interface {
 	HandleResendVerifyEmailRouter(c *fiber.Ctx) error
 	HandleResendVerify2FARouter(c *fiber.Ctx) error
 	HandleLoginRouter(c *fiber.Ctx) error
+	HandleLoginWithCodeRouter(c *fiber.Ctx) error
 }
 
 type authService struct {

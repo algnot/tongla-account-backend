@@ -6,6 +6,7 @@ type TokenType string
 
 const (
 	TokenVerifyEmail TokenType = "verifyEmail"
+	TokenLogin       TokenType = "login"
 )
 
 type Token struct {

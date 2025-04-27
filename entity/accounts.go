@@ -5,26 +5,6 @@ import (
 	"time"
 )
 
-type RegisterRequest struct {
-	Username  string `json:"username" validate:"required"`
-	Email     string `json:"email" validate:"required,email"`
-	Firstname string `json:"firstname" validate:"required"`
-	Lastname  string `json:"lastname" validate:"required"`
-}
-
-type VerifyEmailRequest struct {
-	Token string `json:"token" validate:"required"`
-}
-
-type Verify2FARequest struct {
-	Token string `json:"token" validate:"required"`
-	Code  string `json:"code" validate:"required"`
-}
-
-type LoginRequest struct {
-	Email string `json:"email" validate:"required"`
-}
-
 type Account struct {
 	ID         string         `json:"id" gorm:"type:varchar(255);primarykey"`
 	Username   EncryptedField `json:"username" gorm:"type:varbinary(512)" validate:"required"`
