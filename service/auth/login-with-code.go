@@ -49,5 +49,12 @@ func (a authService) HandleLoginWithCodeRouter(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(user.ToResponse(a.encryptorRepository.Decrypt))
+	token, err := a.jsonWebTokenRepository.GenerateToken(user, "tongla.dev", "tongla.dev")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(token)
 }

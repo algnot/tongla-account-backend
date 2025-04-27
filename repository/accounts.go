@@ -18,6 +18,7 @@ type AccountRepository interface {
 	FindById(id string) (*entity.Account, error)
 	GenerateSecret(userEnt *entity.Account) (string, error)
 	SendVerifyEmail(account *entity.Account) error
+	GenerateToken(userEnt *entity.Account) ([]*entity.JsonWebToken, error)
 
 	isDuplicateAccount(account *entity.Account) (bool, error)
 }
@@ -28,6 +29,11 @@ type accountRepository struct {
 	encryptorRepository    EncryptorRepository
 	notificationRepository NotificationRepository
 	tokenRepository        TokenRepository
+}
+
+func (a accountRepository) GenerateToken(userEnt *entity.Account) ([]*entity.JsonWebToken, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (a accountRepository) GenerateSecret(userEnt *entity.Account) (string, error) {

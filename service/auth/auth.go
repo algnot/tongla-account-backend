@@ -17,22 +17,25 @@ type AuthService interface {
 }
 
 type authService struct {
-	encryptorRepository repository.EncryptorRepository
-	accountRepository   repository.AccountRepository
-	tokenRepository     repository.TokenRepository
-	db                  *gorm.DB
-	config              config.AppConfig
+	encryptorRepository    repository.EncryptorRepository
+	accountRepository      repository.AccountRepository
+	tokenRepository        repository.TokenRepository
+	jsonWebTokenRepository repository.JsonWebTokenRepository
+	db                     *gorm.DB
+	config                 config.AppConfig
 }
 
 func ProvideAuthService(db *gorm.DB, config config.AppConfig) AuthService {
 	encryptorRepository := repository.ProvideEncryptorRepository(db, config)
 	accountRepository := repository.ProvideAccountRepository(db, config)
 	tokenRepository := repository.ProvideTokenRepository(db, config)
+	jsonWebTokenRepository := repository.ProvideJsonWebTokenRepository(db, config)
 	return &authService{
-		db:                  db,
-		config:              config,
-		tokenRepository:     tokenRepository,
-		accountRepository:   accountRepository,
-		encryptorRepository: encryptorRepository,
+		db:                     db,
+		config:                 config,
+		tokenRepository:        tokenRepository,
+		accountRepository:      accountRepository,
+		encryptorRepository:    encryptorRepository,
+		jsonWebTokenRepository: jsonWebTokenRepository,
 	}
 }
