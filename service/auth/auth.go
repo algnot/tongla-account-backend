@@ -14,6 +14,8 @@ type AuthService interface {
 	HandleResendVerify2FARouter(c *fiber.Ctx) error
 	HandleLoginRouter(c *fiber.Ctx) error
 	HandleLoginWithCodeRouter(c *fiber.Ctx) error
+	HandleGetUserInfoRouter(c *fiber.Ctx) error
+	HandleRefreshAccessTokenRouter(c *fiber.Ctx) error
 }
 
 type authService struct {

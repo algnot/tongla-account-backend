@@ -5,8 +5,10 @@ import (
 	"log"
 	"tongla-account/di/config"
 	"tongla-account/di/database"
+	"tongla-account/entity"
 	"tongla-account/service/api_keys"
 	service2 "tongla-account/service/auth"
+	"tongla-account/service/middleware"
 )
 
 func InitRouter(server *fiber.App) {
@@ -28,4 +30,10 @@ func InitRouter(server *fiber.App) {
 	server.Post("/auth/resend-verify-email", authService.HandleVerifyEmailRouter)
 	server.Post("/auth/login", authService.HandleLoginRouter)
 	server.Post("/auth/login-with-code", authService.HandleLoginWithCodeRouter)
+
+	refreshProtected := server.Group("/auth/refresh", middleware.RequireAuth(db, appConfig, entity.JsonWebTokenRefreshToken))
+	refreshProtected.Post("/", authService.HandleRefreshAccessTokenRouter)
+
+	authProtected := server.Group("/auth/me", middleware.RequireAuth(db, appConfig, entity.JsonWebTokenAccessToken))
+	authProtected.Get("/", authService.HandleGetUserInfoRouter)
 }
