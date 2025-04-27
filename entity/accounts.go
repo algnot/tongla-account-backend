@@ -24,7 +24,7 @@ type AccountResponse struct {
 	Email      string `json:"email"`
 	Firstname  string `json:"firstname"`
 	Lastname   string `json:"lastname"`
-	IsVerified bool   `json:"isVerified"`
+	IsVerified bool   `json:"is_verified"`
 }
 
 func (a *Account) ToResponse(decrypt func(EncryptedField) string) AccountResponse {
