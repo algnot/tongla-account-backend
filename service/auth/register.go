@@ -28,6 +28,7 @@ func (a authService) HandleRegisterRouter(c *fiber.Ctx) error {
 		Email:     a.encryptorRepository.Encrypt(registerRequest.Email),
 		Firstname: a.encryptorRepository.Encrypt(registerRequest.Firstname),
 		Lastname:  a.encryptorRepository.Encrypt(registerRequest.Lastname),
+		Birthdate: nil,
 	})
 
 	if err != nil {

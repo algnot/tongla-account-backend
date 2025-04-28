@@ -23,7 +23,7 @@ type Account struct {
 	Secret     EncryptedField `json:"secret" gorm:"type:varbinary(512)" validate:"required"`
 	Phone      EncryptedField `json:"phone" gorm:"type:varbinary(512)"`
 	Address    EncryptedField `json:"address" gorm:"type:varbinary(512)"`
-	Birthdate  time.Time      `json:"birthdate" gorm:"type:date"`
+	Birthdate  *time.Time     `json:"birthdate" gorm:"type:date"`
 	Gender     GenderType     `json:"gender" gorm:"type:varchar(20);default:'notToSay'"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
@@ -45,7 +45,9 @@ type AccountResponse struct {
 
 func (a *Account) ToResponse(decrypt func(EncryptedField) string) AccountResponse {
 	var birthdateStr string
-	if a.Birthdate.IsZero() {
+	if a.Birthdate == nil {
+		birthdateStr = ""
+	} else if a.Birthdate.IsZero() {
 		birthdateStr = ""
 	} else {
 		birthdateStr = a.Birthdate.Format(time.DateOnly)
