@@ -129,6 +129,10 @@ func (r *encryptorRepository) Encrypt(plaintext string) []byte {
 }
 
 func (r *encryptorRepository) Decrypt(ciphertext []byte) string {
+	if ciphertext == nil {
+		return ""
+	}
+
 	secretKey, err := r.GetPassphrase()
 	if err != nil {
 		panic(err)

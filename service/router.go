@@ -30,6 +30,8 @@ func InitRouter(server *fiber.App) {
 	server.Post("/auth/resend-verify-email", authService.HandleVerifyEmailRouter)
 	server.Post("/auth/login", authService.HandleLoginRouter)
 	server.Post("/auth/login-with-code", authService.HandleLoginWithCodeRouter)
+	server.Post("/auth/request-email-login", authService.HandleRequestLoginWithEmailRouter)
+	server.Post("/auth/login-with-token", authService.HandleLoginWithTokenRouter)
 
 	refreshProtected := server.Group("/auth/refresh", middleware.RequireAuth(db, appConfig, entity.JsonWebTokenRefreshToken))
 	refreshProtected.Post("/", authService.HandleRefreshAccessTokenRouter)

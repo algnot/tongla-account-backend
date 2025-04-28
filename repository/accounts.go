@@ -18,7 +18,7 @@ type AccountRepository interface {
 	FindById(id string) (*entity.Account, error)
 	GenerateSecret(userEnt *entity.Account) (string, error)
 	SendVerifyEmail(account *entity.Account) error
-	GenerateToken(userEnt *entity.Account) ([]*entity.JsonWebToken, error)
+	SendLoginLinkWithEmail(account *entity.Account) error
 
 	isDuplicateAccount(account *entity.Account) (bool, error)
 }
@@ -29,11 +29,6 @@ type accountRepository struct {
 	encryptorRepository    EncryptorRepository
 	notificationRepository NotificationRepository
 	tokenRepository        TokenRepository
-}
-
-func (a accountRepository) GenerateToken(userEnt *entity.Account) ([]*entity.JsonWebToken, error) {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (a accountRepository) GenerateSecret(userEnt *entity.Account) (string, error) {
@@ -93,12 +88,54 @@ func (a accountRepository) SendVerifyEmail(account *entity.Account) error {
 	err = a.notificationRepository.SendNotification(&entity.Notification{
 		Type:  entity.NotificationEmail,
 		Email: account.Email,
-		Title: "Verify Tongla Account",
+		Title: "Verify your tongla account",
 		Content: fmt.Sprintf(`Hello, %s
 
 To verify your Tongla account, we need to confirm your email. Please click the following link or copy & paste into the browser:
 
 %s/auth/verify-email?token=%s
+
+The link is expird in 30 minutes.
+
+Best regards,
+Tongla
+www.tongla.dev`, a.encryptorRepository.Decrypt(account.Username), a.config.ServerConfig.FrontendPath, tokenEnt.Token),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (a accountRepository) SendLoginLinkWithEmail(account *entity.Account) error {
+	token, err := a.encryptorRepository.GeneratePassphrase(100)
+	if err != nil {
+		return err
+	}
+
+	tokenEnt := &entity.Token{
+		AccountID: account.ID,
+		Type:      entity.TokenLogin,
+		Token:     token,
+		ExpireAt:  time.Now().Add(30 * time.Minute),
+	}
+
+	tokenEnt, err = a.tokenRepository.CreateToken(tokenEnt)
+	if err != nil {
+		return err
+	}
+
+	err = a.notificationRepository.SendNotification(&entity.Notification{
+		Type:  entity.NotificationEmail,
+		Email: account.Email,
+		Title: "Login link to tongla account",
+		Content: fmt.Sprintf(`Hello, %s
+
+To login your Tongla account. Please click the following link or copy & paste into the browser:
+
+%s/auth/login-with-token?token=%s
 
 The link is expird in 30 minutes.
 
