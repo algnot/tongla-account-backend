@@ -9,12 +9,12 @@ import (
 )
 
 type JsonWebTokenRepository interface {
-	GenerateToken(userEnt *entity.Account, issuer string, audience string) (*entity.JwtTokenResponse, error)
+	GenerateToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string) (*entity.JwtTokenResponse, error)
 	GetTokenById(jwtId string) (*entity.JsonWebToken, error)
 	GenerateAccessToken(user *entity.Account, issuer string, audience string, ref string) (string, error)
 
 	createJsonWebToken(token *entity.JwtToken, tokenType entity.JsonTokenType, user *entity.Account, ref string) (*entity.JsonWebToken, error)
-	generateRefreshToken(user *entity.Account, issuer string, audience string) (string, *entity.JsonWebToken, error)
+	generateRefreshToken(user *entity.Account, issuer string, audience string, userAgent string, deviceID string) (string, *entity.JsonWebToken, error)
 }
 
 type jsonWebTokenRepository struct {
@@ -41,6 +41,8 @@ func (j jsonWebTokenRepository) createJsonWebToken(token *entity.JwtToken, token
 		Exp:       token.Exp,
 		Issuer:    token.Iss,
 		Audience:  token.Aud,
+		UserAgent: token.UserAgent,
+		DeviceID:  token.DeviceID,
 		Ref:       ref,
 	}
 
@@ -52,8 +54,8 @@ func (j jsonWebTokenRepository) createJsonWebToken(token *entity.JwtToken, token
 	return ent, nil
 }
 
-func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer string, audience string) (*entity.JwtTokenResponse, error) {
-	refreshToken, refreshTokenEnt, err := j.generateRefreshToken(userEnt, issuer, audience)
+func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string) (*entity.JwtTokenResponse, error) {
+	refreshToken, refreshTokenEnt, err := j.generateRefreshToken(userEnt, issuer, audience, userAgent, deviceID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +71,7 @@ func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer st
 	}, nil
 }
 
-func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issuer string, audience string) (string, *entity.JsonWebToken, error) {
+func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issuer string, audience string, userAgent string, deviceID string) (string, *entity.JsonWebToken, error) {
 	passphrase, err := j.encryptorRepository.GetPassphrase()
 	if err != nil {
 		return "", nil, err
@@ -82,11 +84,13 @@ func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issue
 
 	secretKey := passphrase.Hash
 	jwtEnt := &entity.JwtToken{
-		Sub: id,
-		Iat: time.Now().Unix(),
-		Exp: time.Now().Add(time.Minute * 60 * 24 * 7).Unix(),
-		Iss: issuer,
-		Aud: audience,
+		Sub:       id,
+		Iat:       time.Now().Unix(),
+		Exp:       time.Now().Add(time.Minute * 60 * 24 * 7).Unix(),
+		Iss:       issuer,
+		Aud:       audience,
+		UserAgent: userAgent,
+		DeviceID:  deviceID,
 	}
 
 	result, err := j.createJsonWebToken(jwtEnt, entity.JsonWebTokenRefreshToken, user, "")
@@ -116,11 +120,13 @@ func (j jsonWebTokenRepository) GenerateAccessToken(user *entity.Account, issuer
 
 	secretKey := passphrase.Hash
 	jwtEnt := &entity.JwtToken{
-		Sub: id,
-		Iat: time.Now().Unix(),
-		Exp: time.Now().Add(time.Minute * 15).Unix(),
-		Iss: issuer,
-		Aud: audience,
+		Sub:       id,
+		Iat:       time.Now().Unix(),
+		Exp:       time.Now().Add(time.Minute * 15).Unix(),
+		Iss:       issuer,
+		Aud:       audience,
+		UserAgent: "",
+		DeviceID:  "",
 	}
 
 	_, err = j.createJsonWebToken(jwtEnt, entity.JsonWebTokenAccessToken, user, ref)

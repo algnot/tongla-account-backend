@@ -15,6 +15,8 @@ type JsonWebToken struct {
 	Type      JsonTokenType `gorm:"type:varchar(255)"`
 	Revoked   bool          `json:"revoked" gorm:"default:false"`
 	Ref       string        `json:"ref" gorm:"type:varchar(255)"`
+	UserAgent string        `json:"userAgent" gorm:"type:varchar(255)"`
+	DeviceID  string        `json:"deviceId" gorm:"type:varchar(255)"`
 	Iat       int64         `json:"iat" gorm:"default:0"`
 	Exp       int64         `json:"exp" gorm:"default:0"`
 	Issuer    string        `json:"issuer" gorm:"type:varchar(255)"`
@@ -27,11 +29,13 @@ type JwtTokenResponse struct {
 }
 
 type JwtToken struct {
-	Sub string `json:"sub"`
-	Iat int64  `json:"iat"`
-	Exp int64  `json:"exp"`
-	Iss string `json:"iss"`
-	Aud string `json:"aud"`
+	Sub       string `json:"sub"`
+	Iat       int64  `json:"iat"`
+	Exp       int64  `json:"exp"`
+	Iss       string `json:"iss"`
+	Aud       string `json:"aud"`
+	UserAgent string
+	DeviceID  string
 }
 
 func (j *JwtToken) ToMapClaims() jwt.MapClaims {
