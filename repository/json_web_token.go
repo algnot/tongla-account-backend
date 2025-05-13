@@ -11,10 +11,10 @@ import (
 type JsonWebTokenRepository interface {
 	GenerateToken(userEnt *entity.Account, issuer string, audience string) (*entity.JwtTokenResponse, error)
 	GetTokenById(jwtId string) (*entity.JsonWebToken, error)
-	GenerateAccessToken(user *entity.Account, issuer string, audience string) (string, error)
+	GenerateAccessToken(user *entity.Account, issuer string, audience string, ref string) (string, error)
 
-	createJsonWebToken(token *entity.JwtToken, tokenType entity.JsonTokenType, user *entity.Account) (*entity.JsonWebToken, error)
-	generateRefreshToken(user *entity.Account, issuer string, audience string) (string, error)
+	createJsonWebToken(token *entity.JwtToken, tokenType entity.JsonTokenType, user *entity.Account, ref string) (*entity.JsonWebToken, error)
+	generateRefreshToken(user *entity.Account, issuer string, audience string) (string, *entity.JsonWebToken, error)
 }
 
 type jsonWebTokenRepository struct {
@@ -32,7 +32,7 @@ func (j jsonWebTokenRepository) GetTokenById(jwtId string) (*entity.JsonWebToken
 	return &ent, nil
 }
 
-func (j jsonWebTokenRepository) createJsonWebToken(token *entity.JwtToken, tokenType entity.JsonTokenType, user *entity.Account) (*entity.JsonWebToken, error) {
+func (j jsonWebTokenRepository) createJsonWebToken(token *entity.JwtToken, tokenType entity.JsonTokenType, user *entity.Account, ref string) (*entity.JsonWebToken, error) {
 	ent := &entity.JsonWebToken{
 		ID:        token.Sub,
 		AccountId: user.ID,
@@ -41,6 +41,7 @@ func (j jsonWebTokenRepository) createJsonWebToken(token *entity.JwtToken, token
 		Exp:       token.Exp,
 		Issuer:    token.Iss,
 		Audience:  token.Aud,
+		Ref:       ref,
 	}
 
 	result := j.db.Create(ent)
@@ -52,12 +53,12 @@ func (j jsonWebTokenRepository) createJsonWebToken(token *entity.JwtToken, token
 }
 
 func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer string, audience string) (*entity.JwtTokenResponse, error) {
-	refreshToken, err := j.generateRefreshToken(userEnt, issuer, audience)
+	refreshToken, refreshTokenEnt, err := j.generateRefreshToken(userEnt, issuer, audience)
 	if err != nil {
 		return nil, err
 	}
 
-	accessToken, err := j.GenerateAccessToken(userEnt, issuer, audience)
+	accessToken, err := j.GenerateAccessToken(userEnt, issuer, audience, refreshTokenEnt.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -68,15 +69,15 @@ func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer st
 	}, nil
 }
 
-func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issuer string, audience string) (string, error) {
+func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issuer string, audience string) (string, *entity.JsonWebToken, error) {
 	passphrase, err := j.encryptorRepository.GetPassphrase()
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	id, err := j.encryptorRepository.GeneratePassphrase(20)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	secretKey := passphrase.Hash
@@ -88,21 +89,21 @@ func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issue
 		Aud: audience,
 	}
 
-	_, err = j.createJsonWebToken(jwtEnt, entity.JsonWebTokenRefreshToken, user)
+	result, err := j.createJsonWebToken(jwtEnt, entity.JsonWebTokenRefreshToken, user, "")
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtEnt.ToMapClaims())
 	signedToken, err := token.SignedString(secretKey)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return signedToken, nil
+	return signedToken, result, nil
 }
 
-func (j jsonWebTokenRepository) GenerateAccessToken(user *entity.Account, issuer string, audience string) (string, error) {
+func (j jsonWebTokenRepository) GenerateAccessToken(user *entity.Account, issuer string, audience string, ref string) (string, error) {
 	passphrase, err := j.encryptorRepository.GetPassphrase()
 	if err != nil {
 		return "", err
@@ -122,7 +123,7 @@ func (j jsonWebTokenRepository) GenerateAccessToken(user *entity.Account, issuer
 		Aud: audience,
 	}
 
-	_, err = j.createJsonWebToken(jwtEnt, entity.JsonWebTokenAccessToken, user)
+	_, err = j.createJsonWebToken(jwtEnt, entity.JsonWebTokenAccessToken, user, ref)
 	if err != nil {
 		return "", err
 	}

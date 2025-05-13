@@ -96,6 +96,7 @@ func RequireAuth(db *gorm.DB, config config.AppConfig, tokenType entity.JsonToke
 		}
 
 		c.Locals("user", user)
+		c.Locals("token", jwtEnt)
 		return c.Next()
 	}
 }

@@ -14,6 +14,7 @@ type JsonWebToken struct {
 	AccountId string        `json:"accountId" gorm:"type:varchar(255);index"`
 	Type      JsonTokenType `gorm:"type:varchar(255)"`
 	Revoked   bool          `json:"revoked" gorm:"default:false"`
+	Ref       string        `json:"ref" gorm:"type:varchar(255)"`
 	Iat       int64         `json:"iat" gorm:"default:0"`
 	Exp       int64         `json:"exp" gorm:"default:0"`
 	Issuer    string        `json:"issuer" gorm:"type:varchar(255)"`
