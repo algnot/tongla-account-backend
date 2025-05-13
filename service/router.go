@@ -36,6 +36,7 @@ func InitRouter(server *fiber.App) {
 	refreshProtected := server.Group("/auth/refresh", middleware.RequireAuth(db, appConfig, entity.JsonWebTokenRefreshToken))
 	refreshProtected.Post("/", authService.HandleRefreshAccessTokenRouter)
 
-	authProtected := server.Group("/auth/me", middleware.RequireAuth(db, appConfig, entity.JsonWebTokenAccessToken))
-	authProtected.Get("/", authService.HandleGetUserInfoRouter)
+	authProtected := server.Group("/account", middleware.RequireAuth(db, appConfig, entity.JsonWebTokenAccessToken))
+	authProtected.Get("/me", authService.HandleGetUserInfoRouter)
+	authProtected.Put("/update-user", authService.HandleUpdateUserRouter)
 }

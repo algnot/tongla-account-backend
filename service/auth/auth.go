@@ -18,6 +18,7 @@ type AuthService interface {
 	HandleRequestLoginWithEmailRouter(c *fiber.Ctx) error
 	HandleGetUserInfoRouter(c *fiber.Ctx) error
 	HandleRefreshAccessTokenRouter(c *fiber.Ctx) error
+	HandleUpdateUserRouter(c *fiber.Ctx) error
 }
 
 type authService struct {
