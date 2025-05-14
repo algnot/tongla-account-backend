@@ -102,10 +102,10 @@ func (o openIdService) HandleGetTokenRouter(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"access_token":  jwtToken.AccessToken,
-		"token_type":    "Bearer",
-		"expires_in":    60 * 10,
-		"id_token":      jwtToken.AccessToken,
-		"refresh_token": jwtToken.RefreshToken,
+		"access_token": jwtToken.AccessToken,
+		"token_type":   "Bearer",
+		"expires_in":   60 * 10,
+		"id_token":     jwtToken.AccessToken,
+		//"refresh_token": jwtToken.RefreshToken,
 	})
 }
