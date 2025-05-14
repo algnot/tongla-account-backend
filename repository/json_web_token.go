@@ -12,6 +12,7 @@ type JsonWebTokenRepository interface {
 	GenerateToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string) (*entity.JwtTokenResponse, error)
 	GetTokenById(jwtId string) (*entity.JsonWebToken, error)
 	GenerateAccessToken(user *entity.Account, issuer string, audience string, ref string) (string, error)
+	GetAllActiveRefreshTokenByAccountId(userId string) (*[]entity.JsonWebToken, error)
 
 	createJsonWebToken(token *entity.JwtToken, tokenType entity.JsonTokenType, user *entity.Account, ref string) (*entity.JsonWebToken, error)
 	generateRefreshToken(user *entity.Account, issuer string, audience string, userAgent string, deviceID string) (string, *entity.JsonWebToken, error)
@@ -21,6 +22,21 @@ type jsonWebTokenRepository struct {
 	db                  *gorm.DB
 	config              config.AppConfig
 	encryptorRepository EncryptorRepository
+}
+
+func (j jsonWebTokenRepository) GetAllActiveRefreshTokenByAccountId(userId string) (*[]entity.JsonWebToken, error) {
+	var tokens []entity.JsonWebToken
+	now := time.Now().Unix()
+
+	result := j.db.
+		Where("account_id = ? AND exp > ? AND type = ? AND revoked = 0", userId, now, entity.JsonWebTokenRefreshToken).
+		Find(&tokens)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &tokens, nil
 }
 
 func (j jsonWebTokenRepository) GetTokenById(jwtId string) (*entity.JsonWebToken, error) {

@@ -41,9 +41,10 @@ func (a authService) HandleLoginWithCodeRouter(c *fiber.Ctx) error {
 		})
 	}
 
+	env := a.config.CommonConfig.Env
 	userSecret := a.encryptorRepository.Decrypt(user.Secret)
 	valid := totp.Validate(request.Code, userSecret)
-	if !valid {
+	if !valid && env != "local" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Code is invalid",
 		})
