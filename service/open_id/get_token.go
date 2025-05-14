@@ -94,7 +94,7 @@ func (o openIdService) HandleGetTokenRouter(c *fiber.Ctx) error {
 		})
 	}
 
-	jwtToken, err := o.jsonWebTokenRepository.GenerateToken(user, client.Issuer, client.Issuer, client.ClientId, client.ClientId)
+	jwtToken, err := o.jsonWebTokenRepository.GenerateToken(user, client.Issuer, client.Issuer, client.ClientId, client.Name)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
