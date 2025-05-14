@@ -6,11 +6,11 @@ import (
 )
 
 type DeviceResponse struct {
-	SessionId string `json:"sessionId"`
-	UserAgent string `json:"userAgent"`
-	DeviceId  string `json:"deviceId"`
+	SessionId string `json:"session_id"`
+	UserAgent string `json:"user_agent"`
+	DeviceId  string `json:"device_id"`
 	Issuer    string `json:"issuer"`
-	IssuerAt  int64  `json:"issuerAt"`
+	IssuerAt  int64  `json:"issuer_at"`
 	Current   bool   `json:"current"`
 }
 
