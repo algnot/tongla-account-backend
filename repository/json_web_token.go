@@ -6,12 +6,13 @@ import (
 	"time"
 	"tongla-account/di/config"
 	"tongla-account/entity"
+	"tongla-account/util"
 )
 
 type JsonWebTokenRepository interface {
 	GenerateToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string) (*entity.JwtTokenResponse, error)
 	GetTokenById(jwtId string) (*entity.JsonWebToken, error)
-	GenerateAccessToken(user *entity.Account, issuer string, audience string, ref string) (string, error)
+	GenerateAccessToken(user *entity.Account, issuer string, audience string, ref string, clientId string) (string, error)
 	GetAllActiveTokenByAccountId(userId string, tokenType entity.JsonTokenType) (*[]entity.JsonWebToken, error)
 	RevokedAllActiveTokenByRefId(refId string) error
 
@@ -73,6 +74,7 @@ func (j jsonWebTokenRepository) createJsonWebToken(token *entity.JwtToken, token
 		Audience:  token.Aud,
 		UserAgent: token.UserAgent,
 		DeviceID:  token.DeviceID,
+		ClientId:  token.ClientId,
 		Ref:       ref,
 	}
 
@@ -90,7 +92,7 @@ func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer st
 		return nil, err
 	}
 
-	accessToken, err := j.GenerateAccessToken(userEnt, issuer, audience, refreshTokenEnt.ID)
+	accessToken, err := j.GenerateAccessToken(userEnt, issuer, audience, refreshTokenEnt.ID, userAgent)
 	if err != nil {
 		return nil, err
 	}
@@ -102,17 +104,11 @@ func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer st
 }
 
 func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issuer string, audience string, userAgent string, deviceID string) (string, *entity.JsonWebToken, error) {
-	passphrase, err := j.encryptorRepository.GetPassphrase()
-	if err != nil {
-		return "", nil, err
-	}
-
 	id, err := j.encryptorRepository.GeneratePassphrase(20)
 	if err != nil {
 		return "", nil, err
 	}
 
-	secretKey := passphrase.Hash
 	jwtEnt := &entity.JwtToken{
 		Sub:       id,
 		Iat:       time.Now().Unix(),
@@ -121,6 +117,9 @@ func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issue
 		Aud:       audience,
 		UserAgent: userAgent,
 		DeviceID:  deviceID,
+		ClientId:  deviceID,
+		Email:     j.encryptorRepository.Decrypt(user.Email),
+		Profile:   j.encryptorRepository.Decrypt(user.Firstname) + " " + j.encryptorRepository.Decrypt(user.Lastname),
 	}
 
 	result, err := j.createJsonWebToken(jwtEnt, entity.JsonWebTokenRefreshToken, user, "")
@@ -128,8 +127,14 @@ func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issue
 		return "", nil, err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtEnt.ToMapClaims())
-	signedToken, err := token.SignedString(secretKey)
+	privateKey, err := util.EnsureRSAKeyPair()
+	if err != nil {
+		return "", nil, err
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwtEnt.ToMapClaims())
+	token.Header["kid"] = "tongla.dev"
+	signedToken, err := token.SignedString(privateKey)
 	if err != nil {
 		return "", nil, err
 	}
@@ -137,26 +142,23 @@ func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issue
 	return signedToken, result, nil
 }
 
-func (j jsonWebTokenRepository) GenerateAccessToken(user *entity.Account, issuer string, audience string, ref string) (string, error) {
-	passphrase, err := j.encryptorRepository.GetPassphrase()
-	if err != nil {
-		return "", err
-	}
-
+func (j jsonWebTokenRepository) GenerateAccessToken(user *entity.Account, issuer string, audience string, ref string, clientId string) (string, error) {
 	id, err := j.encryptorRepository.GeneratePassphrase(20)
 	if err != nil {
 		return "", err
 	}
 
-	secretKey := passphrase.Hash
 	jwtEnt := &entity.JwtToken{
 		Sub:       id,
 		Iat:       time.Now().Unix(),
 		Exp:       time.Now().Add(time.Minute * 15).Unix(),
 		Iss:       issuer,
 		Aud:       audience,
+		Email:     j.encryptorRepository.Decrypt(user.Email),
+		Profile:   j.encryptorRepository.Decrypt(user.Firstname) + " " + j.encryptorRepository.Decrypt(user.Lastname),
 		UserAgent: "",
 		DeviceID:  "",
+		ClientId:  clientId,
 	}
 
 	_, err = j.createJsonWebToken(jwtEnt, entity.JsonWebTokenAccessToken, user, ref)
@@ -164,8 +166,14 @@ func (j jsonWebTokenRepository) GenerateAccessToken(user *entity.Account, issuer
 		return "", err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtEnt.ToMapClaims())
-	signedToken, err := token.SignedString(secretKey)
+	privateKey, err := util.EnsureRSAKeyPair()
+	if err != nil {
+		return "", err
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwtEnt.ToMapClaims())
+	token.Header["kid"] = "tongla.dev"
+	signedToken, err := token.SignedString(privateKey)
 	if err != nil {
 		return "", err
 	}

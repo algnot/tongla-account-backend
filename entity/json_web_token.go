@@ -13,6 +13,7 @@ type JsonWebToken struct {
 	ID        string        `json:"id" gorm:"type:varchar(255);primarykey"`
 	AccountId string        `json:"accountId" gorm:"type:varchar(255);index"`
 	Type      JsonTokenType `gorm:"type:varchar(255)"`
+	ClientId  string        `json:"clientId" gorm:"type:varchar(255)"`
 	Revoked   bool          `json:"revoked" gorm:"default:false"`
 	Ref       string        `json:"ref" gorm:"type:varchar(255)"`
 	UserAgent string        `json:"userAgent" gorm:"type:varchar(255)"`
@@ -24,8 +25,9 @@ type JsonWebToken struct {
 }
 
 type JwtTokenResponse struct {
-	RefreshToken string `json:"refresh_token"`
-	AccessToken  string `json:"access_token"`
+	RefreshToken   string `json:"refresh_token"`
+	AccessToken    string `json:"access_token"`
+	AccessTokenEnt JwtToken
 }
 
 type JwtToken struct {
@@ -34,16 +36,22 @@ type JwtToken struct {
 	Exp       int64  `json:"exp"`
 	Iss       string `json:"iss"`
 	Aud       string `json:"aud"`
+	Email     string `json:"email"`
+	Profile   string `json:"profile"`
+	ClientId  string
 	UserAgent string
 	DeviceID  string
 }
 
 func (j *JwtToken) ToMapClaims() jwt.MapClaims {
 	return jwt.MapClaims{
-		"sub": j.Sub,
-		"iat": j.Iat,
-		"exp": j.Exp,
-		"iss": j.Iss,
-		"aud": j.Aud,
+		"sub":     j.Sub,
+		"iat":     j.Iat,
+		"exp":     j.Exp,
+		"iss":     j.Iss,
+		"aud":     j.Aud,
+		"openid":  j.Sub,
+		"email":   j.Email,
+		"profile": j.Profile,
 	}
 }

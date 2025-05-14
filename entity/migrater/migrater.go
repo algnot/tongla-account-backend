@@ -12,7 +12,8 @@ func AutoMigrate(db *gorm.DB) error {
 		&entity.Account{},
 		&entity.Notification{},
 		&entity.Token{},
-		&entity.JsonWebToken{})
+		&entity.JsonWebToken{},
+		&entity.Service{})
 	if err != nil {
 		return err
 	}

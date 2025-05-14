@@ -5,6 +5,8 @@ services:
     restart: always
     ports:
       - "9004:8080"
+    volumes:
+      - ./secret:/secret
     env_file:
       - .env
 

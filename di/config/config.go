@@ -16,6 +16,7 @@ type CommonConfig struct {
 type ServerConfig struct {
 	Port         string `envconfig:"APP_PORT" default:"8080"`
 	FrontendPath string `envconfig:"APP_FRONTEND_PATH" default:"https://account.tongla.dev"`
+	BackendPath  string `envconfig:"APP_BACKEND_PATH" default:"https://account-api.tongla.dev"`
 }
 
 type DatabaseConfig struct {

@@ -14,7 +14,7 @@ func (a authService) HandleRefreshAccessTokenRouter(c *fiber.Ctx) error {
 		})
 	}
 
-	token, err := a.jsonWebTokenRepository.GenerateAccessToken(user, "tongla.dev", "tongla.dev", refreshToken.ID)
+	token, err := a.jsonWebTokenRepository.GenerateAccessToken(user, "tongla.dev", "tongla.dev", refreshToken.ID, "")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Error generating access token",

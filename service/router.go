@@ -9,6 +9,7 @@ import (
 	"tongla-account/service/api_keys"
 	service2 "tongla-account/service/auth"
 	"tongla-account/service/middleware"
+	service3 "tongla-account/service/open_id"
 )
 
 func InitRouter(server *fiber.App) {
@@ -19,6 +20,7 @@ func InitRouter(server *fiber.App) {
 	appConfig := config.GetConfig()
 	apiKeysService := service.ProvideApiKeysService(db, appConfig)
 	authService := service2.ProvideAuthService(db, appConfig)
+	openIdServer := service3.ProvideOpenIdServiceService(db, appConfig)
 
 	server.Post("/secret/generate", apiKeysService.HandleSecretPostRouter)
 	server.Post("/secret/rotate", apiKeysService.HandleRotatePostRouter)
@@ -44,4 +46,12 @@ func InitRouter(server *fiber.App) {
 	authProtected.Put("/update-user", authService.HandleUpdateUserRouter)
 	authProtected.Get("/all-device", authService.HandleGetAllDeviceRouter)
 	authProtected.Delete("/delete-device", authService.HandleDeleteDeviceRouter)
+
+	openIdProtected := server.Group("/openid/get-service", middleware.RequireAuth(db, appConfig, entity.JsonWebTokenRefreshToken))
+	openIdProtected.Post("/", openIdServer.HandleGetServiceRouter)
+
+	server.Post("/openid/token", openIdServer.HandleGetTokenRouter)
+	server.Get("/openid/.well-known/configuration", openIdServer.HandleCertificateRouter)
+	server.Get("/openid/.well-known/jwks.json", openIdServer.HandleJWKSRouter)
+
 }

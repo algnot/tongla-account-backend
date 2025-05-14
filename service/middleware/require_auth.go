@@ -8,11 +8,11 @@ import (
 	"tongla-account/di/config"
 	"tongla-account/entity"
 	"tongla-account/repository"
+	"tongla-account/util"
 )
 
 func RequireAuth(db *gorm.DB, config config.AppConfig, tokenType entity.JsonTokenType) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		encryptorRepository := repository.ProvideEncryptorRepository(db, config)
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -29,15 +29,15 @@ func RequireAuth(db *gorm.DB, config config.AppConfig, tokenType entity.JsonToke
 			})
 		}
 
-		secretHash, err := encryptorRepository.GetPassphrase()
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Failed to get secret hash",
-			})
-		}
-
 		tokenParsed, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			return secretHash.Hash, nil
+			if token.Method.Alg() != jwt.SigningMethodRS256.Alg() {
+				return nil, fiber.ErrUnauthorized
+			}
+			pubKey, err := util.LoadRSAPublicKey()
+			if err != nil {
+				return nil, err
+			}
+			return pubKey, nil
 		})
 
 		claims, ok := tokenParsed.Claims.(jwt.MapClaims)
