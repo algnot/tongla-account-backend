@@ -19,7 +19,9 @@ type AuthService interface {
 	HandleGetUserInfoRouter(c *fiber.Ctx) error
 	HandleRefreshAccessTokenRouter(c *fiber.Ctx) error
 	HandleUpdateUserRouter(c *fiber.Ctx) error
-	HandleGetAllDevice(c *fiber.Ctx) error
+	HandleGetAllDeviceRouter(c *fiber.Ctx) error
+	HandleLogoutRouter(c *fiber.Ctx) error
+	HandleDeleteDeviceRouter(c *fiber.Ctx) error
 }
 
 type authService struct {

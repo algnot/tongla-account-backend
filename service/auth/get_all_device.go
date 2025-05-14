@@ -18,7 +18,7 @@ type GetAllDeviceResponse struct {
 	Device []DeviceResponse `json:"devices"`
 }
 
-func (a authService) HandleGetAllDevice(c *fiber.Ctx) error {
+func (a authService) HandleGetAllDeviceRouter(c *fiber.Ctx) error {
 	user := c.Locals("user").(*entity.Account)
 	if user == nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -33,7 +33,7 @@ func (a authService) HandleGetAllDevice(c *fiber.Ctx) error {
 		})
 	}
 
-	tokens, err := a.jsonWebTokenRepository.GetAllActiveRefreshTokenByAccountId(user.ID)
+	tokens, err := a.jsonWebTokenRepository.GetAllActiveTokenByAccountId(user.ID, entity.JsonWebTokenRefreshToken)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to get tokens",

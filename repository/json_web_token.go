@@ -12,7 +12,8 @@ type JsonWebTokenRepository interface {
 	GenerateToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string) (*entity.JwtTokenResponse, error)
 	GetTokenById(jwtId string) (*entity.JsonWebToken, error)
 	GenerateAccessToken(user *entity.Account, issuer string, audience string, ref string) (string, error)
-	GetAllActiveRefreshTokenByAccountId(userId string) (*[]entity.JsonWebToken, error)
+	GetAllActiveTokenByAccountId(userId string, tokenType entity.JsonTokenType) (*[]entity.JsonWebToken, error)
+	RevokedAllActiveTokenByRefId(refId string) error
 
 	createJsonWebToken(token *entity.JwtToken, tokenType entity.JsonTokenType, user *entity.Account, ref string) (*entity.JsonWebToken, error)
 	generateRefreshToken(user *entity.Account, issuer string, audience string, userAgent string, deviceID string) (string, *entity.JsonWebToken, error)
@@ -24,12 +25,25 @@ type jsonWebTokenRepository struct {
 	encryptorRepository EncryptorRepository
 }
 
-func (j jsonWebTokenRepository) GetAllActiveRefreshTokenByAccountId(userId string) (*[]entity.JsonWebToken, error) {
+func (j jsonWebTokenRepository) RevokedAllActiveTokenByRefId(refId string) error {
+	result := j.db.
+		Model(&entity.JsonWebToken{}).
+		Where("revoked = 0 AND (id = ? OR ref = ?)", refId, refId).
+		Update("revoked", true)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
+
+func (j jsonWebTokenRepository) GetAllActiveTokenByAccountId(userId string, tokenType entity.JsonTokenType) (*[]entity.JsonWebToken, error) {
 	var tokens []entity.JsonWebToken
 	now := time.Now().Unix()
 
 	result := j.db.
-		Where("account_id = ? AND exp > ? AND type = ? AND revoked = 0", userId, now, entity.JsonWebTokenRefreshToken).
+		Where("account_id = ? AND exp > ? AND type = ? AND revoked = 0", userId, now, tokenType).
 		Find(&tokens)
 
 	if result.Error != nil {
