@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 	"time"
 )
@@ -23,4 +24,14 @@ type Notification struct {
 	CreatedAt time.Time        `json:"created_at"`
 	UpdatedAt time.Time        `json:"updated_at"`
 	DeletedAt gorm.DeletedAt   `json:"deleted_at" gorm:"index"`
+}
+
+func (n *Notification) ToResponse() fiber.Map {
+	return fiber.Map{
+		"title":   n.Title,
+		"content": n.Content,
+		"reason":  n.Reason,
+		"success": n.Success,
+		"created": n.CreatedAt,
+	}
 }

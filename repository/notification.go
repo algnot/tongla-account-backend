@@ -12,6 +12,7 @@ type NotificationRepository interface {
 	SendNotification(notificationEnt *entity.Notification) error
 	CreateNotification(notificationEnt *entity.Notification) (*entity.Notification, error)
 	UpdateNotification(notificationEnt *entity.Notification) (*entity.Notification, error)
+	GetNotificationByEmailAndType(email entity.EncryptedField, notificationType entity.NotificationType) (*[]entity.Notification, error)
 
 	sendEmail(notificationEnt *entity.Notification) error
 }
@@ -20,6 +21,20 @@ type notificationRepository struct {
 	db                  *gorm.DB
 	config              config.AppConfig
 	encryptorRepository EncryptorRepository
+}
+
+func (n notificationRepository) GetNotificationByEmailAndType(email entity.EncryptedField, notificationType entity.NotificationType) (*[]entity.Notification, error) {
+	var notifications []entity.Notification
+
+	result := n.db.
+		Where("type = ? AND email = ? AND success = 1", notificationType, email).
+		Find(&notifications)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &notifications, nil
 }
 
 func (n notificationRepository) UpdateNotification(notificationEnt *entity.Notification) (*entity.Notification, error) {

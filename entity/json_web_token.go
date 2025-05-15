@@ -25,9 +25,8 @@ type JsonWebToken struct {
 }
 
 type JwtTokenResponse struct {
-	RefreshToken   string `json:"refresh_token"`
-	AccessToken    string `json:"access_token"`
-	AccessTokenEnt JwtToken
+	RefreshToken string `json:"refresh_token"`
+	AccessToken  string `json:"access_token"`
 }
 
 type JwtToken struct {

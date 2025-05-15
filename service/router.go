@@ -9,6 +9,7 @@ import (
 	"tongla-account/service/api_keys"
 	service2 "tongla-account/service/auth"
 	"tongla-account/service/middleware"
+	service4 "tongla-account/service/notification"
 	service3 "tongla-account/service/open_id"
 )
 
@@ -21,6 +22,7 @@ func InitRouter(server *fiber.App) {
 	apiKeysService := service.ProvideApiKeysService(db, appConfig)
 	authService := service2.ProvideAuthService(db, appConfig)
 	openIdServer := service3.ProvideOpenIdServiceService(db, appConfig)
+	notificationServer := service4.ProvideNotificationServiceService(db, appConfig)
 
 	server.Post("/secret/generate", apiKeysService.HandleSecretPostRouter)
 	server.Post("/secret/rotate", apiKeysService.HandleRotatePostRouter)
@@ -54,4 +56,6 @@ func InitRouter(server *fiber.App) {
 	server.Get("/openid/.well-known/configuration", openIdServer.HandleCertificateRouter)
 	server.Get("/openid/.well-known/jwks.json", openIdServer.HandleJWKSRouter)
 
+	notificationProtected := server.Group("/notification", middleware.RequireAuth(db, appConfig, entity.JsonWebTokenAccessToken))
+	notificationProtected.Get("/get-all", notificationServer.HandleGetAllNotificationsRouter)
 }
