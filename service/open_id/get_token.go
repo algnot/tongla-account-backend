@@ -97,18 +97,32 @@ func (o openIdService) HandleGetTokenRouter(c *fiber.Ctx) error {
 		})
 	}
 
-	jwtToken, err := o.jsonWebTokenRepository.GenerateToken(user, client.Issuer, client.Issuer, client.ClientId, client.Name, client.ClientId)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+	activeRefreshToken, _ := o.jsonWebTokenRepository.GetActiveRefreshTokenByClientId(clientID)
+
+	var accessToken string
+	if activeRefreshToken == nil {
+		jwtToken, err := o.jsonWebTokenRepository.GenerateToken(user, client.Issuer, client.Issuer, client.ClientId, client.Name, client.ClientId)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+		accessToken = jwtToken.AccessToken
+	} else {
+		accessTokenEnt, err := o.jsonWebTokenRepository.GenerateAccessToken(user, client.Issuer, client.Issuer, client.ClientId, client.Name, client.ClientId, activeRefreshToken.ID)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+		accessToken = accessTokenEnt
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"access_token": jwtToken.AccessToken,
+		"access_token": accessToken,
 		"token_type":   "Bearer",
 		"expires_in":   60 * 60 * 10,
-		"id_token":     jwtToken.AccessToken,
+		"id_token":     accessToken,
 		//"refresh_token": jwtToken.RefreshToken,
 	})
 }

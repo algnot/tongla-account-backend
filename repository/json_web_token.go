@@ -16,6 +16,7 @@ type JsonWebTokenRepository interface {
 	GenerateAccessToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string, clientId string, ref string) (string, error)
 	GetAllActiveTokenByAccountId(userId string, tokenType entity.JsonTokenType) (*[]entity.JsonWebToken, error)
 	RevokedAllActiveTokenByRefId(refId string) error
+	GetActiveRefreshTokenByClientId(clientId string) (*entity.JsonWebToken, error)
 
 	createJsonWebToken(token *entity.JwtToken, tokenType entity.JsonTokenType, user *entity.Account, ref string) (*entity.JsonWebToken, error)
 	generateRefreshToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string, clientId string) (string, *entity.JsonWebToken, error)
@@ -26,6 +27,22 @@ type jsonWebTokenRepository struct {
 	config                 config.AppConfig
 	encryptorRepository    EncryptorRepository
 	notificationRepository NotificationRepository
+}
+
+func (j jsonWebTokenRepository) GetActiveRefreshTokenByClientId(clientId string) (*entity.JsonWebToken, error) {
+	var token entity.JsonWebToken
+	now := time.Now().Unix()
+
+	result := j.db.
+		Where("client_id = ? AND type = ? AND exp > ? AND revoked = 0", clientId, entity.JsonWebTokenRefreshToken, now).
+		Order("exp DESC").
+		First(&token)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &token, nil
 }
 
 func (j jsonWebTokenRepository) RevokedAllActiveTokenByRefId(refId string) error {
