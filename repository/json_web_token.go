@@ -102,7 +102,7 @@ func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer st
 	_ = j.notificationRepository.SendNotification(&entity.Notification{
 		Type:    entity.NotificationWeb,
 		Email:   userEnt.Email,
-		Title:   "Login link to tongla account",
+		Title:   "New login to tongla account",
 		Content: fmt.Sprintf(util.GetWebNotificationContent("login"), issuer, deviceID),
 		Reason:  "login",
 	})
