@@ -44,13 +44,12 @@ type JwtToken struct {
 
 func (j *JwtToken) ToMapClaims() jwt.MapClaims {
 	return jwt.MapClaims{
-		"sub":     j.Sub,
-		"iat":     j.Iat,
-		"exp":     j.Exp,
-		"iss":     j.Iss,
-		"aud":     j.Aud,
-		"openid":  j.Sub,
-		"email":   j.Email,
-		"profile": j.Profile,
+		"sub":    j.Sub,
+		"iat":    j.Iat,
+		"exp":    j.Exp,
+		"iss":    j.Iss,
+		"aud":    j.Aud,
+		"openid": j.Sub,
+		"email":  j.Email,
 	}
 }

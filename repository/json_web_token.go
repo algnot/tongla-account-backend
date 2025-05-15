@@ -11,14 +11,14 @@ import (
 )
 
 type JsonWebTokenRepository interface {
-	GenerateToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string) (*entity.JwtTokenResponse, error)
+	GenerateToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string, clientId string) (*entity.JwtTokenResponse, error)
 	GetTokenById(jwtId string) (*entity.JsonWebToken, error)
-	GenerateAccessToken(user *entity.Account, issuer string, audience string, ref string, clientId string) (string, error)
+	GenerateAccessToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string, clientId string, ref string) (string, error)
 	GetAllActiveTokenByAccountId(userId string, tokenType entity.JsonTokenType) (*[]entity.JsonWebToken, error)
 	RevokedAllActiveTokenByRefId(refId string) error
 
 	createJsonWebToken(token *entity.JwtToken, tokenType entity.JsonTokenType, user *entity.Account, ref string) (*entity.JsonWebToken, error)
-	generateRefreshToken(user *entity.Account, issuer string, audience string, userAgent string, deviceID string) (string, *entity.JsonWebToken, error)
+	generateRefreshToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string, clientId string) (string, *entity.JsonWebToken, error)
 }
 
 type jsonWebTokenRepository struct {
@@ -88,13 +88,13 @@ func (j jsonWebTokenRepository) createJsonWebToken(token *entity.JwtToken, token
 	return ent, nil
 }
 
-func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string) (*entity.JwtTokenResponse, error) {
-	refreshToken, refreshTokenEnt, err := j.generateRefreshToken(userEnt, issuer, audience, userAgent, deviceID)
+func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string, clientId string) (*entity.JwtTokenResponse, error) {
+	refreshToken, refreshTokenEnt, err := j.generateRefreshToken(userEnt, issuer, audience, userAgent, deviceID, clientId)
 	if err != nil {
 		return nil, err
 	}
 
-	accessToken, err := j.GenerateAccessToken(userEnt, issuer, audience, refreshTokenEnt.ID, userAgent)
+	accessToken, err := j.GenerateAccessToken(userEnt, issuer, audience, userAgent, deviceID, clientId, refreshTokenEnt.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer st
 	}, nil
 }
 
-func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issuer string, audience string, userAgent string, deviceID string) (string, *entity.JsonWebToken, error) {
+func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issuer string, audience string, userAgent string, deviceID string, clientId string) (string, *entity.JsonWebToken, error) {
 	id, err := j.encryptorRepository.GeneratePassphrase(20)
 	if err != nil {
 		return "", nil, err
@@ -127,7 +127,7 @@ func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issue
 		Aud:       audience,
 		UserAgent: userAgent,
 		DeviceID:  deviceID,
-		ClientId:  deviceID,
+		ClientId:  clientId,
 		Email:     j.encryptorRepository.Decrypt(user.Email),
 		Profile:   j.encryptorRepository.Decrypt(user.Firstname) + " " + j.encryptorRepository.Decrypt(user.Lastname),
 	}
@@ -152,7 +152,7 @@ func (j jsonWebTokenRepository) generateRefreshToken(user *entity.Account, issue
 	return signedToken, result, nil
 }
 
-func (j jsonWebTokenRepository) GenerateAccessToken(user *entity.Account, issuer string, audience string, ref string, clientId string) (string, error) {
+func (j jsonWebTokenRepository) GenerateAccessToken(userEnt *entity.Account, issuer string, audience string, userAgent string, deviceID string, clientId string, ref string) (string, error) {
 	id, err := j.encryptorRepository.GeneratePassphrase(20)
 	if err != nil {
 		return "", err
@@ -164,14 +164,14 @@ func (j jsonWebTokenRepository) GenerateAccessToken(user *entity.Account, issuer
 		Exp:       time.Now().Add(time.Minute * 15).Unix(),
 		Iss:       issuer,
 		Aud:       audience,
-		Email:     j.encryptorRepository.Decrypt(user.Email),
-		Profile:   j.encryptorRepository.Decrypt(user.Firstname) + " " + j.encryptorRepository.Decrypt(user.Lastname),
-		UserAgent: "",
-		DeviceID:  "",
+		Email:     j.encryptorRepository.Decrypt(userEnt.Email),
+		Profile:   j.encryptorRepository.Decrypt(userEnt.Firstname) + " " + j.encryptorRepository.Decrypt(userEnt.Lastname),
+		UserAgent: userAgent,
+		DeviceID:  deviceID,
 		ClientId:  clientId,
 	}
 
-	_, err = j.createJsonWebToken(jwtEnt, entity.JsonWebTokenAccessToken, user, ref)
+	_, err = j.createJsonWebToken(jwtEnt, entity.JsonWebTokenAccessToken, userEnt, ref)
 	if err != nil {
 		return "", err
 	}
