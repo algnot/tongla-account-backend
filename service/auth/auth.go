@@ -22,6 +22,7 @@ type AuthService interface {
 	HandleGetAllDeviceRouter(c *fiber.Ctx) error
 	HandleLogoutRouter(c *fiber.Ctx) error
 	HandleDeleteDeviceRouter(c *fiber.Ctx) error
+	HandleGetAllServiceRouter(c *fiber.Ctx) error
 }
 
 type authService struct {
@@ -30,6 +31,7 @@ type authService struct {
 	tokenRepository        repository.TokenRepository
 	jsonWebTokenRepository repository.JsonWebTokenRepository
 	notificationRepository repository.NotificationRepository
+	serviceRepository      repository.ServiceRepository
 	db                     *gorm.DB
 	config                 config.AppConfig
 }
@@ -40,6 +42,7 @@ func ProvideAuthService(db *gorm.DB, config config.AppConfig) AuthService {
 	tokenRepository := repository.ProvideTokenRepository(db, config)
 	jsonWebTokenRepository := repository.ProvideJsonWebTokenRepository(db, config)
 	notificationRepository := repository.ProvideNotificationRepository(db, config)
+	serviceRepository := repository.ProvideServiceRepository(db, config)
 	return &authService{
 		db:                     db,
 		config:                 config,
@@ -48,5 +51,6 @@ func ProvideAuthService(db *gorm.DB, config config.AppConfig) AuthService {
 		encryptorRepository:    encryptorRepository,
 		jsonWebTokenRepository: jsonWebTokenRepository,
 		notificationRepository: notificationRepository,
+		serviceRepository:      serviceRepository,
 	}
 }

@@ -8,12 +8,27 @@ import (
 
 type ServiceRepository interface {
 	GetByClientId(clientId string) (*entity.Service, error)
+	GetAllServiceByAccountId(accountId string) ([]*entity.Service, error)
 }
 
 type serviceRepository struct {
 	db                  *gorm.DB
 	config              config.AppConfig
 	encryptorRepository EncryptorRepository
+}
+
+func (s serviceRepository) GetAllServiceByAccountId(accountId string) ([]*entity.Service, error) {
+	var services []*entity.Service
+
+	result := s.db.
+		Where("owner = ?", accountId).
+		Find(&services)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return services, nil
 }
 
 func (s serviceRepository) GetByClientId(clientId string) (*entity.Service, error) {

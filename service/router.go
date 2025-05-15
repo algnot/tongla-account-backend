@@ -48,6 +48,7 @@ func InitRouter(server *fiber.App) {
 	authProtected.Put("/update-user", authService.HandleUpdateUserRouter)
 	authProtected.Get("/all-device", authService.HandleGetAllDeviceRouter)
 	authProtected.Delete("/delete-device", authService.HandleDeleteDeviceRouter)
+	authProtected.Get("/all-service", authService.HandleGetAllServiceRouter)
 
 	openIdProtected := server.Group("/openid/get-service", middleware.RequireAuth(db, appConfig, entity.JsonWebTokenRefreshToken))
 	openIdProtected.Post("/", openIdServer.HandleGetServiceRouter)
