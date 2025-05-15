@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"tongla-account/entity"
 	"tongla-account/util"
@@ -46,6 +47,14 @@ func (a authService) HandleDeleteDeviceRouter(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+
+	_ = a.notificationRepository.SendNotification(&entity.Notification{
+		Type:    entity.NotificationWeb,
+		Email:   user.Email,
+		Title:   "Device Deleted",
+		Content: fmt.Sprintf(util.GetWebNotificationContent("deviceDelete"), token.DeviceID, token.Issuer),
+		Reason:  "alert",
+	})
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{})
 }

@@ -41,5 +41,9 @@ func GetWebNotificationContent(mapper string) string {
 		return `You have logged in with %s via %s device.`
 	}
 
+	if mapper == "deviceDelete" {
+		return `You have deleted device id %s via %s`
+	}
+
 	return ""
 }
