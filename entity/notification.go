@@ -9,6 +9,7 @@ type NotificationType string
 
 const (
 	NotificationEmail NotificationType = "email"
+	NotificationWeb   NotificationType = "web"
 )
 
 type Notification struct {

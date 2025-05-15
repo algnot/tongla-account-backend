@@ -8,6 +8,7 @@ import (
 	"time"
 	"tongla-account/di/config"
 	"tongla-account/entity"
+	"tongla-account/util"
 )
 
 type AccountRepository interface {
@@ -86,20 +87,10 @@ func (a accountRepository) SendVerifyEmail(account *entity.Account) error {
 	}
 
 	err = a.notificationRepository.SendNotification(&entity.Notification{
-		Type:  entity.NotificationEmail,
-		Email: account.Email,
-		Title: "Verify your tongla account",
-		Content: fmt.Sprintf(`Hello, %s
-
-To verify your Tongla account, we need to confirm your email. Please click the following link or copy & paste into the browser:
-
-%s/auth/verify-email?token=%s
-
-The link is expird in 30 minutes.
-
-Best regards,
-Tongla
-www.tongla.dev`, a.encryptorRepository.Decrypt(account.Username), a.config.ServerConfig.FrontendPath, tokenEnt.Token),
+		Type:    entity.NotificationEmail,
+		Email:   account.Email,
+		Title:   "Verify your tongla account",
+		Content: fmt.Sprintf(util.GetEmailContent("verifyEmail"), a.encryptorRepository.Decrypt(account.Username), a.config.ServerConfig.FrontendPath, tokenEnt.Token),
 	})
 
 	if err != nil {
@@ -128,20 +119,10 @@ func (a accountRepository) SendLoginLinkWithEmail(account *entity.Account) error
 	}
 
 	err = a.notificationRepository.SendNotification(&entity.Notification{
-		Type:  entity.NotificationEmail,
-		Email: account.Email,
-		Title: "Login link to tongla account",
-		Content: fmt.Sprintf(`Hello, %s
-
-To login your Tongla account. Please click the following link or copy & paste into the browser:
-
-%s/auth/login-with-token?token=%s
-
-The link is expird in 30 minutes.
-
-Best regards,
-Tongla
-www.tongla.dev`, a.encryptorRepository.Decrypt(account.Username), a.config.ServerConfig.FrontendPath, tokenEnt.Token),
+		Type:    entity.NotificationEmail,
+		Email:   account.Email,
+		Title:   "Login link to tongla account",
+		Content: fmt.Sprintf(util.GetEmailContent("login"), a.encryptorRepository.Decrypt(account.Username), a.config.ServerConfig.FrontendPath, tokenEnt.Token),
 	})
 
 	if err != nil {

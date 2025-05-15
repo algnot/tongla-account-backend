@@ -29,6 +29,7 @@ type authService struct {
 	accountRepository      repository.AccountRepository
 	tokenRepository        repository.TokenRepository
 	jsonWebTokenRepository repository.JsonWebTokenRepository
+	notificationRepository repository.NotificationRepository
 	db                     *gorm.DB
 	config                 config.AppConfig
 }
@@ -38,6 +39,7 @@ func ProvideAuthService(db *gorm.DB, config config.AppConfig) AuthService {
 	accountRepository := repository.ProvideAccountRepository(db, config)
 	tokenRepository := repository.ProvideTokenRepository(db, config)
 	jsonWebTokenRepository := repository.ProvideJsonWebTokenRepository(db, config)
+	notificationRepository := repository.ProvideNotificationRepository(db, config)
 	return &authService{
 		db:                     db,
 		config:                 config,
@@ -45,5 +47,6 @@ func ProvideAuthService(db *gorm.DB, config config.AppConfig) AuthService {
 		accountRepository:      accountRepository,
 		encryptorRepository:    encryptorRepository,
 		jsonWebTokenRepository: jsonWebTokenRepository,
+		notificationRepository: notificationRepository,
 	}
 }

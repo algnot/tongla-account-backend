@@ -85,6 +85,16 @@ func (n notificationRepository) SendNotification(notificationEnt *entity.Notific
 	if createdNotification.Type == entity.NotificationEmail {
 		return n.sendEmail(createdNotification)
 	}
+
+	if createdNotification.Type == entity.NotificationWeb {
+		notificationEnt.Success = true
+		_, err := n.UpdateNotification(notificationEnt)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
 	return errors.New("invalid notification type")
 }
 

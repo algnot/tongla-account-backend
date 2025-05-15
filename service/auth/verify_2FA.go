@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/pquerna/otp/totp"
 	"tongla-account/entity"
@@ -71,6 +72,14 @@ func (a authService) HandleResendVerify2FARouter(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+
+	_ = a.notificationRepository.SendNotification(&entity.Notification{
+		Type:    entity.NotificationWeb,
+		Email:   user.Email,
+		Title:   "Your email is verified",
+		Content: fmt.Sprintf(util.GetWebNotificationContent("emailVerified"), a.encryptorRepository.Decrypt(user.Email)),
+		Reason:  "email",
+	})
 
 	return c.Status(fiber.StatusOK).JSON(verifyUser.ToResponse(a.encryptorRepository.Decrypt))
 }

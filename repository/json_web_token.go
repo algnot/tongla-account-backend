@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 	"time"
@@ -21,9 +22,10 @@ type JsonWebTokenRepository interface {
 }
 
 type jsonWebTokenRepository struct {
-	db                  *gorm.DB
-	config              config.AppConfig
-	encryptorRepository EncryptorRepository
+	db                     *gorm.DB
+	config                 config.AppConfig
+	encryptorRepository    EncryptorRepository
+	notificationRepository NotificationRepository
 }
 
 func (j jsonWebTokenRepository) RevokedAllActiveTokenByRefId(refId string) error {
@@ -96,6 +98,14 @@ func (j jsonWebTokenRepository) GenerateToken(userEnt *entity.Account, issuer st
 	if err != nil {
 		return nil, err
 	}
+
+	_ = j.notificationRepository.SendNotification(&entity.Notification{
+		Type:    entity.NotificationWeb,
+		Email:   userEnt.Email,
+		Title:   "Login link to tongla account",
+		Content: fmt.Sprintf(util.GetWebNotificationContent("login"), issuer, deviceID),
+		Reason:  "login",
+	})
 
 	return &entity.JwtTokenResponse{
 		AccessToken:  accessToken,
@@ -183,9 +193,11 @@ func (j jsonWebTokenRepository) GenerateAccessToken(user *entity.Account, issuer
 
 func ProvideJsonWebTokenRepository(db *gorm.DB, config config.AppConfig) JsonWebTokenRepository {
 	encryptorRepository := ProvideEncryptorRepository(db, config)
+	notificationRepository := ProvideNotificationRepository(db, config)
 	return &jsonWebTokenRepository{
-		db:                  db,
-		config:              config,
-		encryptorRepository: encryptorRepository,
+		db:                     db,
+		config:                 config,
+		encryptorRepository:    encryptorRepository,
+		notificationRepository: notificationRepository,
 	}
 }
