@@ -89,5 +89,8 @@ func (o openIdService) HandleGetServiceRouter(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"redirect": client.RedirectUri + "?code=" + token + "&state=" + request.State,
+		"name":     client.Name,
+		"issuer":   client.Issuer,
+		"scope":    request.Scope,
 	})
 }
