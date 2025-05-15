@@ -87,6 +87,12 @@ func RequireAuth(db *gorm.DB, config config.AppConfig, tokenType entity.JsonToke
 			})
 		}
 
+		if jwtEnt.ClientId != "" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Token invalid",
+			})
+		}
+
 		accountRepository := repository.ProvideAccountRepository(db, config)
 		user, err := accountRepository.FindById(jwtEnt.AccountId)
 		if err != nil {
