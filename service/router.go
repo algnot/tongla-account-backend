@@ -53,6 +53,9 @@ func InitRouter(server *fiber.App) {
 	openIdProtected := server.Group("/openid/get-service", middleware.RequireAuth(db, appConfig, entity.JsonWebTokenRefreshToken))
 	openIdProtected.Post("/", openIdServer.HandleGetServiceRouter)
 
+	openIdGetUserInfoProtected := server.Group("/openid/userinfo", middleware.RequireOpenIdAuth(db, appConfig))
+	openIdGetUserInfoProtected.Get("/", openIdServer.HandleGetUserInfoRouter)
+
 	server.Post("/openid/token", openIdServer.HandleGetTokenRouter)
 	server.Get("/openid/.well-known/configuration", openIdServer.HandleCertificateRouter)
 	server.Get("/openid/.well-known/jwks.json", openIdServer.HandleJWKSRouter)

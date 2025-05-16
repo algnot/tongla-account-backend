@@ -12,6 +12,7 @@ type OpenIdService interface {
 	HandleGetTokenRouter(c *fiber.Ctx) error
 	HandleCertificateRouter(c *fiber.Ctx) error
 	HandleJWKSRouter(c *fiber.Ctx) error
+	HandleGetUserInfoRouter(c *fiber.Ctx) error
 }
 
 type openIdService struct {
