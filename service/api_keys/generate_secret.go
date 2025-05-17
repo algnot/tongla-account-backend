@@ -11,16 +11,12 @@ func (a apiKeysService) HandleSecretPostRouter(c *fiber.Ctx) error {
 
 	err := util.ValidateRequest(c, &apiKeysRequest)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	key, err := a.apiKeysRepository.CreateKeyByName(apiKeysRequest.Name)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(key)

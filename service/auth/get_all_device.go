@@ -35,9 +35,7 @@ func (a authService) HandleGetAllDeviceRouter(c *fiber.Ctx) error {
 
 	tokens, err := a.jsonWebTokenRepository.GetAllActiveTokenByAccountId(user.ID, entity.JsonWebTokenRefreshToken)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to get tokens",
-		})
+		panic(err)
 	}
 
 	var devices []DeviceResponse

@@ -18,9 +18,7 @@ func (o openIdService) HandleAddServiceRouter(c *fiber.Ctx) error {
 
 	err := util.ValidateRequest(c, &register)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	user := c.Locals("user").(*entity.Account)
@@ -47,9 +45,7 @@ func (o openIdService) HandleAddServiceRouter(c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(service.ToResponse())

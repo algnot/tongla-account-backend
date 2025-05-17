@@ -48,26 +48,20 @@ func (a authService) HandleLoginWithTokenRouter(c *fiber.Ctx) error {
 
 	user, err := a.accountRepository.FindById(token.AccountID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	token.Used = true
 	_, err = a.tokenRepository.UpdateToken(token)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	userAgent := c.Get("User-Agent")
 	deviceID := c.Get("Device-ID")
 	jwtToken, err := a.jsonWebTokenRepository.GenerateToken(user, "tongla.dev", "tongla.dev", userAgent, deviceID, "")
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(jwtToken)

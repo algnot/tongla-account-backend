@@ -18,16 +18,12 @@ func (a authService) HandleResendVerify2FARouter(c *fiber.Ctx) error {
 
 	err := util.ValidateRequest(c, &request)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	token, err := a.tokenRepository.FindKeyByToken(request.Token)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	if token.Type != entity.TokenVerifyEmail {
@@ -38,9 +34,7 @@ func (a authService) HandleResendVerify2FARouter(c *fiber.Ctx) error {
 
 	user, err := a.accountRepository.FindById(token.AccountID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	if user.IsVerified {
@@ -60,17 +54,13 @@ func (a authService) HandleResendVerify2FARouter(c *fiber.Ctx) error {
 	token.Used = true
 	_, err = a.tokenRepository.UpdateToken(token)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	user.IsVerified = true
 	verifyUser, err := a.accountRepository.UpdateAccount(user)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	_ = a.notificationRepository.SendNotification(&entity.Notification{

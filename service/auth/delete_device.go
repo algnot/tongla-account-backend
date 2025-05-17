@@ -16,9 +16,7 @@ func (a authService) HandleDeleteDeviceRouter(c *fiber.Ctx) error {
 
 	err := util.ValidateRequest(c, &request)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	user := c.Locals("user").(*entity.Account)
@@ -30,9 +28,7 @@ func (a authService) HandleDeleteDeviceRouter(c *fiber.Ctx) error {
 
 	token, err := a.jsonWebTokenRepository.GetTokenById(request.SessionId)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	if token.AccountId != user.ID {
@@ -43,9 +39,7 @@ func (a authService) HandleDeleteDeviceRouter(c *fiber.Ctx) error {
 
 	err = a.jsonWebTokenRepository.RevokedAllActiveTokenByRefId(request.SessionId)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	_ = a.notificationRepository.SendNotification(&entity.Notification{

@@ -14,24 +14,18 @@ func (a authService) HandleRequestLoginWithEmailRouter(c *fiber.Ctx) error {
 
 	err := util.ValidateRequest(c, &request)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	user, err := a.accountRepository.FindByEmail(request.Email)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	if !user.IsVerified {
 		err = a.accountRepository.SendVerifyEmail(user)
 		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": err.Error(),
-			})
+			panic(err)
 		}
 
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -41,9 +35,7 @@ func (a authService) HandleRequestLoginWithEmailRouter(c *fiber.Ctx) error {
 
 	err = a.accountRepository.SendLoginLinkWithEmail(user)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{})

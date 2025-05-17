@@ -9,9 +9,7 @@ func (a apiKeysService) HandleVerifyGetRouter(c *fiber.Ctx) error {
 
 	result, err := a.apiKeysRepository.VerifyKey(apiKey)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(result)

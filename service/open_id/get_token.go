@@ -34,9 +34,7 @@ func (o openIdService) HandleGetTokenRouter(c *fiber.Ctx) error {
 
 	client, err := o.serviceRepository.GetByClientId(clientID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	if client.ClientSecret != clientSecret {
@@ -53,9 +51,7 @@ func (o openIdService) HandleGetTokenRouter(c *fiber.Ctx) error {
 
 	token, err := o.tokenRepository.FindKeyByToken(code)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	if token.Type != entity.TokenAuthCode {
@@ -84,17 +80,13 @@ func (o openIdService) HandleGetTokenRouter(c *fiber.Ctx) error {
 
 	user, err := o.accountRepository.FindById(token.AccountID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	token.Used = true
 	_, err = o.tokenRepository.UpdateToken(token)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	activeRefreshToken, _ := o.jsonWebTokenRepository.GetActiveRefreshTokenByClientId(clientID)
@@ -103,17 +95,13 @@ func (o openIdService) HandleGetTokenRouter(c *fiber.Ctx) error {
 	if activeRefreshToken == nil {
 		jwtToken, err := o.jsonWebTokenRepository.GenerateToken(user, client.Issuer, client.Issuer, client.ClientId, client.Name, client.ClientId)
 		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": err.Error(),
-			})
+			panic(err)
 		}
 		accessToken = jwtToken.AccessToken
 	} else {
 		accessTokenEnt, err := o.jsonWebTokenRepository.GenerateAccessToken(user, client.Issuer, client.Issuer, client.ClientId, client.Name, client.ClientId, activeRefreshToken.ID)
 		if err != nil {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": err.Error(),
-			})
+			panic(err)
 		}
 		accessToken = accessTokenEnt
 	}

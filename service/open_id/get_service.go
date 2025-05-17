@@ -37,9 +37,7 @@ func (o openIdService) HandleGetServiceRouter(c *fiber.Ctx) error {
 
 	err := util.ValidateRequest(c, &request)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	if request.ResponseType != "code" {
@@ -50,9 +48,7 @@ func (o openIdService) HandleGetServiceRouter(c *fiber.Ctx) error {
 
 	client, err := o.serviceRepository.GetByClientId(request.ClientId)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	if client.RedirectUri != request.RedirectUri {
@@ -76,7 +72,7 @@ func (o openIdService) HandleGetServiceRouter(c *fiber.Ctx) error {
 
 	token, err := o.encryptorRepository.GeneratePassphrase(50)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	tokenEnt := &entity.Token{
 		AccountID: user.ID,

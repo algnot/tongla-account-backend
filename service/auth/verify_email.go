@@ -19,16 +19,12 @@ func (a authService) HandleVerifyEmailRouter(c *fiber.Ctx) error {
 
 	err := util.ValidateRequest(c, &request)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	token, err := a.tokenRepository.FindKeyByToken(request.Token)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	if token.Type != entity.TokenVerifyEmail {
@@ -45,20 +41,16 @@ func (a authService) HandleVerifyEmailRouter(c *fiber.Ctx) error {
 
 	user, err := a.accountRepository.FindById(token.AccountID)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	if user.IsVerified {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "User is already verified",
-		})
+		panic(err)
 	}
 
 	secret, err := a.accountRepository.GenerateSecret(user)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	qrBytes, err := qrcode.Encode(secret, qrcode.Medium, 256)

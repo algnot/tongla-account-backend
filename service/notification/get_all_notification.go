@@ -19,9 +19,7 @@ func (n notificationService) HandleGetAllNotificationsRouter(c *fiber.Ctx) error
 
 	notifications, err := n.notificationRepository.GetNotificationByEmailAndType(user.Email, entity.NotificationWeb)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to get notifications",
-		})
+		panic(err)
 	}
 
 	var response []fiber.Map

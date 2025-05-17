@@ -18,9 +18,7 @@ func (a authService) HandleRegisterRouter(c *fiber.Ctx) error {
 
 	err := util.ValidateRequest(c, &registerRequest)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	createdAccount, err := a.accountRepository.CreateAccount(&entity.Account{
@@ -32,9 +30,7 @@ func (a authService) HandleRegisterRouter(c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(createdAccount.ToResponse(a.encryptorRepository.Decrypt))

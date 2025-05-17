@@ -24,9 +24,7 @@ func (a authService) HandleUpdateUserRouter(c *fiber.Ctx) error {
 
 	err := util.ValidateRequest(c, &request)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	user := c.Locals("user").(*entity.Account)
@@ -67,9 +65,7 @@ func (a authService) HandleUpdateUserRouter(c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	return c.Status(fiber.StatusOK).JSON(updatedUser.ToResponse(a.encryptorRepository.Decrypt))

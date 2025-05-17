@@ -22,9 +22,7 @@ func (a authService) HandleLogoutRouter(c *fiber.Ctx) error {
 
 	err := a.jsonWebTokenRepository.RevokedAllActiveTokenByRefId(refreshToken.ID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		panic(err)
 	}
 
 	return c.JSON(fiber.Map{})

@@ -19,9 +19,7 @@ func (a authService) HandleGetAllServiceRouter(c *fiber.Ctx) error {
 
 	services, err := a.serviceRepository.GetAllServiceByAccountId(user.ID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to get service by account",
-		})
+		panic(err)
 	}
 
 	var response []entity.ServicesResponse

@@ -22,15 +22,11 @@ func (o openIdService) HandleGetUserInfoRouter(c *fiber.Ctx) error {
 
 	client, err := o.serviceRepository.GetByClientId(token.ClientId)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Not found client",
-		})
+		panic(err)
 	}
 
 	if client == nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Not found client",
-		})
+		panic(err)
 	}
 
 	user.Phone = o.encryptorRepository.Encrypt("")
