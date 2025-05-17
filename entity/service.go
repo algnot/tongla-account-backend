@@ -3,6 +3,7 @@ package entity
 import (
 	"gorm.io/gorm"
 	"time"
+	"tongla-account/di/config"
 )
 
 type Service struct {
@@ -18,4 +19,31 @@ type Service struct {
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
 	DeletedAt    gorm.DeletedAt `json:"deleted_at" gorm:"index"`
+}
+
+type ServicesResponse struct {
+	Name                   string `json:"name"`
+	ClientId               string `json:"client_id"`
+	ClientSecret           string `json:"client_secret"`
+	RedirectUri            string `json:"redirect_uri"`
+	Issuer                 string `json:"issuer"`
+	Scopes                 string `json:"scopes"`
+	GrantTypes             string `json:"grant_types"`
+	ResponseType           string `json:"response_type"`
+	OpenidConfigurationUri string `json:"openid_configuration_uri"`
+}
+
+func (service Service) ToResponse() ServicesResponse {
+	appConfig := config.GetConfig()
+	return ServicesResponse{
+		Name:                   service.Name,
+		ClientId:               service.ClientId,
+		ClientSecret:           service.ClientSecret,
+		RedirectUri:            service.RedirectUri,
+		Issuer:                 service.Issuer,
+		Scopes:                 service.Scope,
+		GrantTypes:             service.GrantType,
+		ResponseType:           service.ResponseType,
+		OpenidConfigurationUri: appConfig.ServerConfig.BackendPath + "/openid/.well-known/configuration",
+	}
 }
