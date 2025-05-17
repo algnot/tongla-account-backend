@@ -68,6 +68,8 @@ jobs:
           SMTP_SENDER=${{ secrets.SMTP_SENDER }}
           SMTP_PORT=${{ secrets.SMTP_PORT }}
           SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
+          
+          SENTRY_DNS=${{ secrets.SENTRY_DNS }}
           EOF
 
           cat ./.env | ssh -o ProxyCommand="cloudflared access ssh --hostname ${{ secrets.CLOUDFLARED_SSH_HOST }}" \
