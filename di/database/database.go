@@ -3,15 +3,18 @@ package database
 import (
 	"database/sql"
 	"fmt"
+
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/kelseyhightower/envconfig"
-	"gorm.io/driver/mysql"
+	gmysql "gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"tongla-account/di/config"
 )
 
 func InitDatabase() (*gorm.DB, error) {
 	DBConfig := getDatabaseConfig()
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?tls=true&charset=utf8mb4&parseTime=true&loc=Local",
 		DBConfig.User, DBConfig.Password, DBConfig.Host, DBConfig.Port, DBConfig.DBName)
 
 	sqlDB, err := sql.Open("mysql", dsn)
@@ -19,13 +22,10 @@ func InitDatabase() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	gormDB, err := gorm.Open(mysql.New(mysql.Config{
-		Conn: sqlDB,
-	}), &gorm.Config{})
+	gormDB, err := gorm.Open(gmysql.New(gmysql.Config{Conn: sqlDB}), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
-
 	return gormDB, nil
 }
 

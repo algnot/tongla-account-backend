@@ -7,6 +7,7 @@ services:
       - "9004:8080"
     volumes:
       - ./secret:/secret
+      - ./secret/database.pem:/secret
     env_file:
       - .env
 
