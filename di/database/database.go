@@ -14,7 +14,7 @@ import (
 func InitDatabase() (*gorm.DB, error) {
 	DBConfig := getDatabaseConfig()
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local",
 		DBConfig.User, DBConfig.Password, DBConfig.Host, DBConfig.Port, DBConfig.DBName)
 
 	sqlDB, err := sql.Open("mysql", dsn)
