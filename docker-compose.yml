@@ -7,10 +7,12 @@ services:
       - "9004:8080"
     volumes:
       - ./secret:/secret
-      - ./secret/database.pem:/secret
     env_file:
       - .env
+    networks:
+      - shared-db
 
 networks:
-  default:
-    driver: bridge
+  shared-db:
+    external: true
+    name: shared-db
