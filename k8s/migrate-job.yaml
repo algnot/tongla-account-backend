@@ -22,3 +22,4 @@ spec:
           env:
             - name: RUN_MIGRATE
               value: "true"
+      ttlSecondsAfterFinished: 600

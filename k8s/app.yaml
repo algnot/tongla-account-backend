@@ -25,7 +25,6 @@ spec:
                 name: tongla-config
             - secretRef:
                 name: tongla-secret
-          # กันพังแบบง่าย ๆ
           resources:
             requests:
               cpu: "100m"
@@ -40,5 +39,6 @@ spec:
   selector:
     app: tongla-backend
   ports:
-    - port: 80
+    - port: 8080
       targetPort: 8080
+      nodePort: 8080
