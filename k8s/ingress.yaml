@@ -1,3 +1,16 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: account-api-tls
+  namespace: tongla
+spec:
+  secretName: account-api-tls
+  dnsNames:
+    - account-api.tongla.dev
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -12,6 +25,10 @@ metadata:
     nginx.ingress.kubernetes.io/cors-allow-credentials: "false"
 spec:
   ingressClassName: internal-nginx
+  tls:
+    - hosts:
+        - account-api.tongla.dev
+      secretName: account-api-tls
   rules:
     - host: account-api.tongla.dev
       http:
