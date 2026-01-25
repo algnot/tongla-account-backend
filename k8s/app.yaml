@@ -21,7 +21,6 @@ spec:
           volumeMounts:
             - name: tongla-secret-vol
               mountPath: /app/secret
-              readOnly: true
           ports:
             - containerPort: 8080
           envFrom:
