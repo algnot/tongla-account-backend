@@ -40,7 +40,7 @@ jobs:
 
       - name: Push image
         run: |
-          docker push ghcr.io/your-org/tongla-account-backend:${{ github.sha }}
+          docker push ghcr.io/algnot/tongla-account-backend:${{ github.sha }}
 
       - name: Tag latest
         run: |
