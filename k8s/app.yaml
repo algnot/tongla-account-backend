@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tongla-backend
+  namespace: tongla
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tongla-backend
+  template:
+    metadata:
+      labels:
+        app: tongla-backend
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull
+      containers:
+        - name: app
+          image: ghcr.io/algnot/tongla-account-backend:__IMAGE_TAG__
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: tongla-config
+            - secretRef:
+                name: tongla-secret
+          # กันพังแบบง่าย ๆ
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tongla-backend
+  namespace: tongla
+spec:
+  selector:
+    app: tongla-backend
+  ports:
+    - port: 80
+      targetPort: 8080
