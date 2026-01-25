@@ -68,23 +68,17 @@ jobs:
           sed "s|__IMAGE_TAG__|${TAG}|g" k8s/app.yaml > .rendered/app.yaml
           sed "s|__IMAGE_TAG__|${TAG}|g; s|__TAG__|${TAG}|g" k8s/migrate-job.yaml > .rendered/migrate-job.yaml
 
-      - name: Load manifests into env
+      - name: Encode manifests as base64
         run: |
           set -e
+          echo "APP_YAML_B64=$(base64 -w0 .rendered/app.yaml)" >> $GITHUB_ENV
+          echo "MIGRATE_YAML_B64=$(base64 -w0 .rendered/migrate-job.yaml)" >> $GITHUB_ENV
 
-          echo "APP_YAML<<EOF" >> $GITHUB_ENV
-          cat .rendered/app.yaml >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
-          echo "MIGRATE_YAML<<EOF" >> $GITHUB_ENV
-          cat .rendered/migrate-job.yaml >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-           
       - name: Apply to microk8s
         uses: appleboy/ssh-action@master
         env:
-          APP_YAML: ${{ env.APP_YAML }}
-          MIGRATE_YAML: ${{ env.MIGRATE_YAML }}
+          APP_YAML_B64: ${{ env.APP_YAML_B64 }}
+          MIGRATE_YAML_B64: ${{ env.MIGRATE_YAML_B64 }}
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USERNAME }}
@@ -94,10 +88,18 @@ jobs:
           script: |
             set -e
             TAG=${{ github.sha }}
-            printf "%s" "$MIGRATE_YAML" > /tmp/migrate-job.yaml
-            printf "%s" "$APP_YAML" > /tmp/app.yaml
-            ls -la /tmp/migrate-job.yaml /tmp/app.yaml
+
+            # decode manifests
+            echo "$MIGRATE_YAML_B64" | base64 -d > /tmp/migrate-job.yaml
+            echo "$APP_YAML_B64" | base64 -d > /tmp/app.yaml
+
+            # sanity check: must not be empty
+            wc -c /tmp/migrate-job.yaml /tmp/app.yaml
+            head -n 5 /tmp/migrate-job.yaml
+            head -n 5 /tmp/app.yaml
+
             microk8s kubectl apply -f /tmp/migrate-job.yaml
             microk8s kubectl -n tongla wait --for=condition=complete job/tongla-migrate-${TAG} --timeout=10m
+
             microk8s kubectl apply -f /tmp/app.yaml
             microk8s kubectl -n tongla rollout status deployment/tongla-backend --timeout=5m
