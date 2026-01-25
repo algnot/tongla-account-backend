@@ -60,11 +60,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Render manifests
+      - name: Render manifests (into workspace)
         run: |
           TAG=${{ github.sha }}
-          sed "s|__IMAGE_TAG__|${TAG}|g" k8s/app.yaml > /tmp/app.yaml
-          sed "s|__IMAGE_TAG__|${TAG}|g; s|__TAG__|${TAG}|g" k8s/migrate-job.yaml > /tmp/migrate-job.yaml
+          mkdir -p .rendered
+          sed "s|__IMAGE_TAG__|${TAG}|g" k8s/app.yaml > .rendered/app.yaml
+          sed "s|__IMAGE_TAG__|${TAG}|g; s|__TAG__|${TAG}|g" k8s/migrate-job.yaml > .rendered/migrate-job.yaml
 
       - name: Upload manifests to server
         uses: appleboy/scp-action@master
@@ -73,21 +74,22 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_SSH_PORT }}
-          source: "/tmp/app.yaml,/tmp/migrate-job.yaml"
+          source: ".rendered/app.yaml,.rendered/migrate-job.yaml"
           target: "/tmp"
 
-      - name: Apply to microk8s (no repo needed)
+      - name: Apply to microk8s
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_SSH_PORT }}
-          script_stop: true
           command_timeout: 30m
           script: |
             set -e
             TAG=${{ github.sha }}
+
+            ls -la /tmp/app.yaml /tmp/migrate-job.yaml
 
             microk8s kubectl apply -f /tmp/migrate-job.yaml
             microk8s kubectl -n tongla wait --for=condition=complete job/tongla-migrate-${TAG} --timeout=10m
