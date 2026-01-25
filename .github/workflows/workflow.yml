@@ -88,14 +88,14 @@ jobs:
             microk8s kubectl -n tongla rollout status deployment/tongla-backend --timeout=5m
 
       - name: Upload manifests to server
-          uses: appleboy/scp-action@master
-          with:
-            host: ${{ secrets.SERVER_IP }}
-            username: ${{ secrets.SERVER_USERNAME }}
-            key: ${{ secrets.SERVER_SSH_KEY }}
-            port: ${{ secrets.SERVER_SSH_PORT }}
-            source: "/tmp/app.yaml,/tmp/migrate-job.yaml"
-            target: "/tmp"
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_SSH_PORT }}
+          source: "/tmp/app.yaml,/tmp/migrate-job.yaml"
+          target: "/tmp"
 
       - name: Apply to microk8s (no repo needed)
         uses: appleboy/ssh-action@master
