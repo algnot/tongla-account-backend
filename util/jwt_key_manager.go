@@ -5,7 +5,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 	"os"
 	"path/filepath"
 )
@@ -17,12 +16,6 @@ const (
 )
 
 func EnsureRSAKeyPair() (*rsa.PrivateKey, error) {
-	if _, err := os.Stat(privateKeyPath); errors.Is(err, os.ErrNotExist) {
-		err := generateRSAKeyPair()
-		if err != nil {
-			return nil, err
-		}
-	}
 	return loadPrivateKey()
 }
 
