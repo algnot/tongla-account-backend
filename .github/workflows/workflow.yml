@@ -76,24 +76,20 @@ jobs:
 
       - name: Apply to microk8s
         uses: appleboy/ssh-action@master
-        env:
-          APP_YAML_B64: ${{ env.APP_YAML_B64 }}
-          MIGRATE_YAML_B64: ${{ env.MIGRATE_YAML_B64 }}
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_SSH_PORT }}
           command_timeout: 30m
+          envs: APP_YAML_B64,MIGRATE_YAML_B64
           script: |
             set -e
             TAG=${{ github.sha }}
 
-            # decode manifests
             echo "$MIGRATE_YAML_B64" | base64 -d > /tmp/migrate-job.yaml
             echo "$APP_YAML_B64" | base64 -d > /tmp/app.yaml
 
-            # sanity check: must not be empty
             wc -c /tmp/migrate-job.yaml /tmp/app.yaml
             head -n 5 /tmp/migrate-job.yaml
             head -n 5 /tmp/app.yaml
