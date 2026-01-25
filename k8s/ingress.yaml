@@ -4,6 +4,7 @@ metadata:
   name: tongla-backend
   namespace: tongla
 spec:
+  ingressClassName: nginx
   rules:
     - host: account-api.tongla.dev
       http:
