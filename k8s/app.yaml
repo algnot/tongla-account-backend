@@ -20,7 +20,7 @@ spec:
           image: ghcr.io/algnot/tongla-account-backend:__IMAGE_TAG__
           volumeMounts:
             - name: tongla-secret-vol
-              mountPath: /secret
+              mountPath: /app/secret
               readOnly: true
           ports:
             - containerPort: 8080
