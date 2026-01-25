@@ -1,8 +1,9 @@
 package entity
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type GenderType string

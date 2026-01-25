@@ -1,8 +1,9 @@
 package service
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"tongla-account/util"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 type LoginRequest struct {

@@ -1,7 +1,8 @@
 #!/bin/sh
+set -e
 
 echo "🚀 Running migration..."
-go run ./cmd --with-migrate
+./main --with-migrate
 
 echo "✅ Starting app..."
-go run ./cmd
+exec ./main

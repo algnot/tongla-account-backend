@@ -194,7 +194,6 @@ func (a accountRepository) CreateAccount(account *entity.Account) (*entity.Accou
 	account.ID = id
 
 	result := a.db.Create(account)
-
 	if result.Error != nil {
 		return nil, result.Error
 	}
