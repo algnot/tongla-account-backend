@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"os"
 	"path/filepath"
 )
@@ -16,6 +17,12 @@ const (
 )
 
 func EnsureRSAKeyPair() (*rsa.PrivateKey, error) {
+	//if _, err := os.Stat(privateKeyPath); errors.Is(err, os.ErrNotExist) {
+	//	err := generateRSAKeyPair()
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//}
 	return loadPrivateKey()
 }
 
@@ -56,8 +63,27 @@ func loadPrivateKey() (*rsa.PrivateKey, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	block, _ := pem.Decode(data)
-	return x509.ParsePKCS1PrivateKey(block.Bytes)
+	if block == nil {
+		return nil, errors.New("invalid PEM block")
+	}
+
+	if key, err := x509.ParsePKCS1PrivateKey(block.Bytes); err == nil {
+		return key, nil
+	}
+
+	keyAny, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	key, ok := keyAny.(*rsa.PrivateKey)
+	if !ok {
+		return nil, errors.New("not RSA private key")
+	}
+
+	return key, nil
 }
 
 func LoadRSAPublicKey() (*rsa.PublicKey, error) {
