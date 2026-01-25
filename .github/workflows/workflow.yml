@@ -98,11 +98,11 @@ jobs:
             head -n 5 /tmp/app.yaml
             head -n 5 /tmp/ingress.yaml
 
-            microk8s kubectl apply -f /tmp/migrate-job.yaml
-            microk8s kubectl -n tongla wait --for=condition=complete job/tongla-migrate-${TAG} --timeout=10m
+            # microk8s kubectl apply -f /tmp/migrate-job.yaml
+            # microk8s kubectl -n tongla wait --for=condition=complete job/tongla-migrate-${TAG} --timeout=10m
 
             microk8s kubectl apply -f /tmp/app.yaml
             microk8s kubectl -n tongla rollout status deployment/tongla-backend --timeout=5m
 
             microk8s kubectl apply -f /tmp/ingress.yaml
-            microk8s kubectl -n tongla describe ingress tongla-backend 
+            microk8s kubectl -n tongla describe ingress tongla-backend
