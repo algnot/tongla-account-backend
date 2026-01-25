@@ -71,17 +71,15 @@ jobs:
       - name: Load manifests into env
         run: |
           set -e
-          {
-            echo "APP_YAML<<'EOF'"
-            cat .rendered/app.yaml
-            echo "EOF"
-          } >> $GITHUB_ENV
-          {
-            echo "MIGRATE_YAML<<'EOF'"
-            cat .rendered/migrate-job.yaml
-            echo "EOF"
-          } >> $GITHUB_ENV
-          
+
+          echo "APP_YAML<<EOF" >> $GITHUB_ENV
+          cat .rendered/app.yaml >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+          echo "MIGRATE_YAML<<EOF" >> $GITHUB_ENV
+          cat .rendered/migrate-job.yaml >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+           
       - name: Apply to microk8s
         uses: appleboy/ssh-action@master
         env:
