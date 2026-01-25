@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tongla-backend
+  namespace: tongla
+spec:
+  rules:
+    - host: account-api.tongla.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tongla-backend
+                port:
+                  number: 8080
