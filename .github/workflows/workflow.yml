@@ -52,47 +52,59 @@ jobs:
           docker push ghcr.io/algnot/tongla-account-backend:latest
 
 
-  Deploy:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    needs: Build
+    Deploy:
+      if: github.ref == 'refs/heads/main'
+      runs-on: ubuntu-latest
+      needs: Build
 
-    steps:
-      - uses: actions/checkout@v4
+      steps:
+        - uses: actions/checkout@v4
 
-      - name: Render manifests (into workspace)
-        run: |
-          TAG=${{ github.sha }}
-          mkdir -p .rendered
-          sed "s|__IMAGE_TAG__|${TAG}|g" k8s/app.yaml > .rendered/app.yaml
-          sed "s|__IMAGE_TAG__|${TAG}|g; s|__TAG__|${TAG}|g" k8s/migrate-job.yaml > .rendered/migrate-job.yaml
-
-      - name: Upload manifests to server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: ${{ secrets.SERVER_SSH_PORT }}
-          source: ".rendered/app.yaml,.rendered/migrate-job.yaml"
-          target: "/tmp"
-
-      - name: Apply to microk8s
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          port: ${{ secrets.SERVER_SSH_PORT }}
-          command_timeout: 30m
-          script: |
+        - name: Render manifests
+          run: |
             set -e
             TAG=${{ github.sha }}
+            mkdir -p .rendered
+            sed "s|__IMAGE_TAG__|${TAG}|g" k8s/app.yaml > .rendered/app.yaml
+            sed "s|__IMAGE_TAG__|${TAG}|g; s|__TAG__|${TAG}|g" k8s/migrate-job.yaml > .rendered/migrate-job.yaml
 
-            ls -la /tmp/app.yaml /tmp/migrate-job.yaml
+        - name: Load manifests into env
+          run: |
+            set -e
+            {
+              echo "APP_YAML<<'EOF'"
+              cat .rendered/app.yaml
+              echo "EOF"
+            } >> $GITHUB_ENV
 
-            microk8s kubectl apply -f /tmp/migrate-job.yaml
-            microk8s kubectl -n tongla wait --for=condition=complete job/tongla-migrate-${TAG} --timeout=10m
+            {
+              echo "MIGRATE_YAML<<'EOF'"
+              cat .rendered/migrate-job.yaml
+              echo "EOF"
+            } >> $GITHUB_ENV
 
-            microk8s kubectl apply -f /tmp/app.yaml
-            microk8s kubectl -n tongla rollout status deployment/tongla-backend --timeout=5m
+        - name: Apply to microk8s
+          uses: appleboy/ssh-action@master
+          env:
+            APP_YAML: ${{ env.APP_YAML }}
+            MIGRATE_YAML: ${{ env.MIGRATE_YAML }}
+          with:
+            host: ${{ secrets.SERVER_IP }}
+            username: ${{ secrets.SERVER_USERNAME }}
+            key: ${{ secrets.SERVER_SSH_KEY }}
+            port: ${{ secrets.SERVER_SSH_PORT }}
+            command_timeout: 30m
+            script: |
+              set -e
+              TAG=${{ github.sha }}
+
+              printf "%s" "$MIGRATE_YAML" > /tmp/migrate-job.yaml
+              printf "%s" "$APP_YAML" > /tmp/app.yaml
+
+              ls -la /tmp/migrate-job.yaml /tmp/app.yaml
+
+              microk8s kubectl apply -f /tmp/migrate-job.yaml
+              microk8s kubectl -n tongla wait --for=condition=complete job/tongla-migrate-${TAG} --timeout=10m
+
+              microk8s kubectl apply -f /tmp/app.yaml
+              microk8s kubectl -n tongla rollout status deployment/tongla-backend --timeout=5m
