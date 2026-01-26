@@ -24,7 +24,7 @@ metadata:
     nginx.ingress.kubernetes.io/cors-max-age: "86400"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "false"
 spec:
-  ingressClassName: internal-nginx
+  ingressClassName: public
   tls:
     - hosts:
         - account-api.tongla.dev
