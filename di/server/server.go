@@ -11,6 +11,7 @@ import (
 	"time"
 	"tongla-account/di/config"
 	router "tongla-account/service"
+	"tongla-account/service/metrics"
 )
 
 func InitApiServer() error {
@@ -29,6 +30,9 @@ func InitApiServer() error {
 
 	serverConfig := getServerConfig()
 	server := fiber.New()
+	// Outermost, and registered before routes, so every API route is measured
+	// even when group middleware returns before the handler runs.
+	metrics.Init(server)
 	server.Use(sentryHandler)
 	server.Use(func(c *fiber.Ctx) (err error) {
 		defer func() {
